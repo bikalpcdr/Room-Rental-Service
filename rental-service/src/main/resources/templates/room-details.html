@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${room.title} + ' - Rental Service'">Room Details - Rental Service</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .room-gallery {
+            margin-bottom: 30px;
+        }
+        .main-image {
+            height: 400px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .thumbnail {
+            height: 100px;
+            object-fit: cover;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: opacity 0.3s;
+        }
+        .thumbnail:hover {
+            opacity: 0.8;
+        }
+        .room-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .amenities-list {
+            list-style: none;
+            padding: 0;
+        }
+        .amenities-list li {
+            margin-bottom: 10px;
+        }
+        .amenities-list i {
+            color: #0d6efd;
+            margin-right: 10px;
+        }
+        .related-room-card {
+            transition: transform 0.3s;
+        }
+        .related-room-card:hover {
+            transform: translateY(-5px);
+        }
+        .price-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Rental Service</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/search">Browse Rooms</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/register">Register</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Room Details Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <!-- Room Gallery -->
+                <div class="col-md-8">
+                    <div class="room-gallery">
+                        <img th:src="${room.images[0]?.imageUrl}" class="main-image w-100 mb-3" id="mainImage" alt="Room Image">
+                        <div class="row g-2">
+                            <div class="col-3" th:each="image, stat : ${room.images}">
+                                <img th:src="${image.imageUrl}" class="thumbnail w-100" 
+                                     th:onclick="'document.getElementById(\'mainImage\').src = this.src;'"
+                                     alt="Room Thumbnail">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Room Description -->
+                    <div class="room-info">
+                        <h2 th:text="${room.title}"></h2>
+                        <p class="text-muted" th:text="${room.description}"></p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Room Type</h5>
+                                <p th:text="${room.roomType}"></p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Price</h5>
+                                <p th:text="'$' + ${room.price} + '/month'"></p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Location</h5>
+                                <p th:text="${room.location}"></p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Availability</h5>
+                                <p th:text="${room.available} ? 'Available' : 'Not Available'"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Amenities -->
+                    <div class="room-info">
+                        <h4>Amenities</h4>
+                        <ul class="amenities-list">
+                            <li th:each="amenity : ${room.amenities}">
+                                <i class="fas fa-check"></i>
+                                <span th:text="${amenity}"></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Booking Section -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">Book This Room</h4>
+                            <p class="card-text" th:text="'$' + ${room.price} + '/month'"></p>
+                            <form th:action="@{/bookings}" method="post">
+                                <input type="hidden" name="roomId" th:value="${room.id}">
+                                <div class="mb-3">
+                                    <label for="checkInDate" class="form-label">Check-in Date</label>
+                                    <input type="date" class="form-control" id="checkInDate" name="checkInDate" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="checkOutDate" class="form-label">Check-out Date</label>
+                                    <input type="date" class="form-control" id="checkOutDate" name="checkOutDate" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Book Now</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Rooms -->
+            <div class="row mt-5">
+                <h3 class="mb-4">Related Rooms</h3>
+                <div class="col-md-3" th:each="relatedRoom : ${relatedRooms.content}">
+                    <div class="card related-room-card">
+                        <img th:src="${relatedRoom.images[0]?.imageUrl}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Related Room">
+                        <div class="price-tag">$<span th:text="${relatedRoom.price}"></span>/month</div>
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${relatedRoom.title}"></h5>
+                            <p class="card-text" th:text="${relatedRoom.description}"></p>
+                            <a th:href="@{/room/{id}(id=${relatedRoom.id})}" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>About Us</h5>
+                    <p>Find your perfect rental space with our comprehensive listing service.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/" class="text-white">Home</a></li>
+                        <li><a href="/search" class="text-white">Browse Rooms</a></li>
+                        <li><a href="/contact" class="text-white">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Contact Info</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-phone"></i> +1 234 567 890</li>
+                        <li><i class="fas fa-envelope"></i> info@rentalservice.com</li>
+                        <li><i class="fas fa-map-marker-alt"></i> 123 Main St, City, Country</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

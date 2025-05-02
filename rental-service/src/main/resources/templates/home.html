@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rental Service - Find Your Perfect Place</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .hero-section {
+            background: linear-gradient(45deg, #1a237e, #0d47a1);
+            height: 500px;
+            display: flex;
+            align-items: center;
+            color: white;
+        }
+        .room-card {
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+        .room-card:hover {
+            transform: translateY(-5px);
+        }
+        .room-image {
+            height: 200px;
+            object-fit: cover;
+        }
+        .featured-section {
+            background-color: #f8f9fa;
+            padding: 50px 0;
+        }
+        .price-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        .search-box {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Rental Service</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/search">Browse Rooms</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/login">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/register">Register</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section with Search -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8 mx-auto text-center">
+                    <h1 class="display-4 mb-4">Find Your Perfect Place</h1>
+                    <div class="search-box">
+                        <form action="/search" method="get" class="row g-3">
+                            <div class="col-md-4">
+                                <input type="text" name="keyword" class="form-control" placeholder="Search by location or keyword">
+                            </div>
+                            <div class="col-md-3">
+                                <select name="roomType" class="form-select">
+                                    <option value="">All Types</option>
+                                    <option th:each="type : ${roomTypes}" th:value="${type}" th:text="${type}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="number" name="minPrice" class="form-control" placeholder="Min Price">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">Search</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Rooms Section -->
+    <section class="featured-section">
+        <div class="container">
+            <h2 class="text-center mb-4">Featured Rooms</h2>
+            <div class="row">
+                <div class="col-md-4" th:each="room : ${featuredRooms}">
+                    <div class="card room-card">
+                        <img th:src="${imageUtil.getImageUrl(room)}" class="card-img-top room-image" alt="Room Image">
+                        <div class="price-tag">$<span th:text="${room.pricePerMonth}"></span>/month</div>
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${room.title}"></h5>
+                            <p class="card-text" th:text="${room.description}"></p>
+                            <a th:href="@{/room/{id}(id=${room.id})}" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Available Rooms Section -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-4">Available Rooms</h2>
+            <div class="row">
+                <div class="col-md-3" th:each="room : ${availableRooms.content}">
+                    <div class="card room-card">
+                        <img th:src="${imageUtil.getImageUrl(room)}" class="card-img-top room-image" alt="Room Image">
+                        <div class="price-tag">$<span th:text="${room.pricePerMonth}"></span>/month</div>
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${room.title}"></h5>
+                            <p class="card-text" th:text="${room.description}"></p>
+                            <a th:href="@{/room/{id}(id=${room.id})}" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <a href="/search" class="btn btn-outline-primary">View All Rooms</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Rooms Section -->
+    <section class="featured-section">
+        <div class="container">
+            <h2 class="text-center mb-4">Recently Added</h2>
+            <div class="row">
+                <div class="col-md-3" th:each="room : ${recentRooms}">
+                    <div class="card room-card">
+                        <img th:src="${imageUtil.getImageUrl(room)}" class="card-img-top room-image" alt="Room Image">
+                        <div class="price-tag">$<span th:text="${room.pricePerMonth}"></span>/month</div>
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${room.title}"></h5>
+                            <p class="card-text" th:text="${room.description}"></p>
+                            <a th:href="@{/room/{id}(id=${room.id})}" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>About Us</h5>
+                    <p>Find your perfect rental space with our comprehensive listing service.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/" class="text-white">Home</a></li>
+                        <li><a href="/search" class="text-white">Browse Rooms</a></li>
+                        <li><a href="/contact" class="text-white">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Contact Info</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-phone"></i> +1 234 567 890</li>
+                        <li><i class="fas fa-envelope"></i> info@rentalservice.com</li>
+                        <li><i class="fas fa-map-marker-alt"></i> 123 Main St, City, Country</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

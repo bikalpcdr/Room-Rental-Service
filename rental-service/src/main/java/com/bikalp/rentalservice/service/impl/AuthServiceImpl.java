@@ -15,6 +15,8 @@ import com.bikalp.rentalservice.repository.UserRepo;
 import com.bikalp.rentalservice.service.AuthService;
 import com.bikalp.rentalservice.service.EmailService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -30,6 +32,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
+
     private final AuthenticationManager authenticationManager;
     private final UserRepo userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -39,14 +43,34 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void login(LoginRequest loginRequest) throws AuthenticationException {
         try {
+            log.info("Starting authentication process for email: {}", loginRequest.getEmail());
+            
+            // Check if user exists before attempting authentication
+            User user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> {
+                    log.warn("User not found with email: {}", loginRequest.getEmail());
+                    return new AuthenticationException("User not found");
+                });
+            
+            log.info("User found with role: {}", user.getRole());
+            
+            if (!user.isEnabled()) {
+                log.warn("User account is disabled: {}", loginRequest.getEmail());
+                throw new AuthenticationException("Account is disabled");
+            }
+            
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                     loginRequest.getEmail(),
                     loginRequest.getPassword()
                 )
             );
+            
+            log.info("Authentication successful for user: {}", authentication.getName());
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            
         } catch (Exception e) {
+            log.error("Authentication failed for email {}: {}", loginRequest.getEmail(), e.getMessage(), e);
             throw new AuthenticationException("Invalid email or password");
         }
     }

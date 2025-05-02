@@ -2,11 +2,14 @@ package com.bikalp.rentalservice.repository;
 
 import com.bikalp.rentalservice.entity.Booking;
 import com.bikalp.rentalservice.enums.BookingStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -46,4 +49,10 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
             nativeQuery = true)
     List<Booking> findByRoomIdAndStatus(@Param("roomId") Long roomId, 
                                       @Param("status") String status);
+
+    @Query("SELECT COALESCE(SUM(b.totalPrice), 0) FROM Booking b WHERE b.status = 'COMPLETED'")
+    BigDecimal getTotalRevenue();
+    
+    @Query("SELECT b FROM Booking b WHERE b.status = :status ORDER BY b.bookingDate DESC")
+    List<Booking> findRecentBookingsByStatus(@Param("status") BookingStatus status, Pageable pageable);
 }

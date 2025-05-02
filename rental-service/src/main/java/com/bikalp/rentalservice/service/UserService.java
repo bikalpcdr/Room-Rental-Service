@@ -2,6 +2,8 @@ package com.bikalp.rentalservice.service;
 
 import com.bikalp.rentalservice.entity.User;
 import com.bikalp.rentalservice.enums.UserRole;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,4 +19,12 @@ public interface UserService {
     List<User> getUsersByRole(UserRole role);
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
+    long getTotalUsers();
+    List<User> getRecentUsers(int limit);
+    Optional<User> findById(Long id);
+    User save(User user);
+    void delete(Long id);
+    Page<User> findAllUsers(Pageable pageable, String search);
+    User createUser(User user);
+    void toggleUserStatus(Long id);
 } 

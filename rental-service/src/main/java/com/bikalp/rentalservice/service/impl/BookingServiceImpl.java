@@ -6,9 +6,12 @@ import com.bikalp.rentalservice.repository.BookingRepo;
 import com.bikalp.rentalservice.service.BookingService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -78,5 +81,38 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<Booking> getBookingsByLandlordId(Long landlordId) {
         return bookingRepo.findByRoomLandlordId(landlordId);
+    }
+
+    @Override
+    public long getTotalBookings() {
+        return bookingRepo.count();
+    }
+
+    @Override
+    public List<Booking> getRecentBookings(int limit) {
+        return bookingRepo.findAll(
+            PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "bookingDate"))
+        ).getContent();
+    }
+
+    @Override
+    public BigDecimal getTotalRevenue() {
+        return bookingRepo.getTotalRevenue();
+    }
+
+    @Override
+    public Booking findById(Long id) {
+        return bookingRepo.findById(id)
+            .orElseThrow(() -> new RuntimeException("Booking not found"));
+    }
+
+    @Override
+    public Booking save(Booking booking) {
+        return bookingRepo.save(booking);
+    }
+
+    @Override
+    public void delete(Long id) {
+        bookingRepo.deleteById(id);
     }
 } 

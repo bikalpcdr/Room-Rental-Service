@@ -98,4 +98,9 @@ public class RoomServiceImpl implements RoomService {
     public List<Room> getRecentRooms() {
         return roomRepo.findTop10ByOrderByCreatedAtDesc();
     }
+
+    @Override
+    public long getTotalRooms() {
+        return roomRepo.count();
+    }
 } 

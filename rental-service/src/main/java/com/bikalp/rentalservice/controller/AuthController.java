@@ -7,14 +7,23 @@ import com.bikalp.rentalservice.entity.User;
 import com.bikalp.rentalservice.enums.UserRole;
 import com.bikalp.rentalservice.service.AuthService;
 import com.bikalp.rentalservice.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+@Slf4j
 @Controller
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -33,21 +42,17 @@ public class AuthController {
 
     @PostMapping("/login")
     public String login(@Valid @ModelAttribute("loginRequest") LoginRequest loginRequest,
-                       BindingResult result,
-                       RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.loginRequest", result);
-            redirectAttributes.addFlashAttribute("loginRequest", loginRequest);
-            return "redirect:/auth/login";
+                       BindingResult bindingResult,
+                       Model model) {
+        log.info("Received login request for email: {}", loginRequest.getEmail());
+        
+        if (bindingResult.hasErrors()) {
+            log.warn("Login request validation failed: {}", bindingResult.getAllErrors());
+            model.addAttribute("error", "Please fill in all required fields");
+            return "auth/login";
         }
 
-        try {
-            authService.login(loginRequest);
-            return "redirect:/";
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/auth/login";
-        }
+        return "auth/login";
     }
 
     @GetMapping("/register")
@@ -113,9 +118,13 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/logout")
-    public String logout() {
-        authService.logout();
-        return "redirect:/auth/login";
+    @PostMapping("/logout")
+    public String logout(HttpServletRequest request, HttpServletResponse response) {
+        log.info("Logging out user");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            new SecurityContextLogoutHandler().logout(request, response, auth);
+        }
+        return "redirect:/auth/login?logout=true";
     }
 } 

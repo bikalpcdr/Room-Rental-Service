@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -22,11 +24,13 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepo userRepository;
     private final RoomRepo roomRepo;
     private final PasswordEncoder passwordEncoder;
+    private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
 
     @Override
     public void run(String... args) {
         // Create superadmin user if not exists
         if (!userRepository.existsByEmail("superadmin@rentalservice.com")) {
+            log.info("Creating superadmin user...");
             User superadmin = new User();
             superadmin.setUsername("superadmin");
             superadmin.setFullName("Super Admin");
@@ -36,7 +40,9 @@ public class DataInitializer implements CommandLineRunner {
             superadmin.setRole(UserRole.SUPER_ADMIN);
             superadmin.setEnabled(true);
             userRepository.save(superadmin);
-            System.out.println("Superadmin user created successfully!");
+            log.info("Superadmin user created successfully!");
+        } else {
+            log.info("Superadmin user already exists");
         }
 
         // Create sample landlord

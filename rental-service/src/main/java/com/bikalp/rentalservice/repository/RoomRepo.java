@@ -52,4 +52,23 @@ public interface RoomRepo extends JpaRepository<Room, Long> {
     List<Room> findTop5ByOrderByCreatedAtDesc();
 
     List<Room> findTop10ByOrderByCreatedAtDesc();
+
+    List<Room> findByRoomType(RoomType roomType);
+    List<Room> findByLandlordId(Long landlordId);
+    List<Room> findByAvailableTrue();
+    
+    @Query("SELECT r FROM Room r WHERE r.available = true AND r.roomType = :roomType")
+    List<Room> findAvailableRoomsByType(@Param("roomType") RoomType roomType);
+    
+    @Query("SELECT COUNT(r) FROM Room r WHERE r.available = true")
+    long countAvailableRooms();
+    
+    @Query("SELECT COUNT(r) FROM Room r WHERE r.roomType = :roomType")
+    long countRoomsByType(@Param("roomType") RoomType roomType);
+    
+    @Query("SELECT r FROM Room r ORDER BY r.createdAt DESC")
+    List<Room> findRecentRooms(Pageable pageable);
+    
+    @Query("SELECT r FROM Room r WHERE r.title LIKE %:keyword% OR r.description LIKE %:keyword%")
+    List<Room> searchRooms(@Param("keyword") String keyword);
 }

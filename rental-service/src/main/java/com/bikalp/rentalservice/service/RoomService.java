@@ -21,4 +21,5 @@ public interface RoomService {
     Room updateRoomAvailability(Long id, boolean available);
     List<Room> getFeaturedRooms();
     List<Room> getRecentRooms();
+    long getTotalRooms();
 } 

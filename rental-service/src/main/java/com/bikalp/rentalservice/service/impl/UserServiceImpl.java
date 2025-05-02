@@ -6,6 +6,12 @@ import com.bikalp.rentalservice.repository.UserRepo;
 import com.bikalp.rentalservice.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +26,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Override
     public User saveUser(User user) {
@@ -84,5 +91,71 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean existsByEmail(String email) {
         return userRepo.existsByEmail(email);
+    }
+
+    @Override
+    public long getTotalUsers() {
+        return userRepo.count();
+    }
+
+    @Override
+    public List<User> getRecentUsers(int limit) {
+        return userRepo.findAll(
+            PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "id"))
+        ).getContent();
+    }
+
+    @Override
+    public Optional<User> findById(Long id) {
+        logger.info("Finding user by ID: {}", id);
+        Optional<User> user = userRepo.findById(id);
+        if (user.isPresent()) {
+            logger.info("Found user: {}", user.get().getUsername());
+        } else {
+            logger.warn("No user found with ID: {}", id);
+        }
+        return user;
+    }
+
+    @Override
+    public User save(User user) {
+        return userRepo.save(user);
+    }
+
+    @Override
+    public void delete(Long id) {
+        userRepo.deleteById(id);
+    }
+
+    @Override
+    public Page<User> findAllUsers(Pageable pageable, String search) {
+        if (search != null && !search.isEmpty()) {
+            return userRepo.findByUsernameContainingOrEmailContainingOrFullNameContaining(
+                search, search, search, pageable
+            );
+        }
+        return userRepo.findAll(pageable);
+    }
+
+    @Override
+    public User createUser(User user) {
+        if (existsByUsername(user.getUsername())) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+        if (existsByEmail(user.getEmail())) {
+            throw new IllegalArgumentException("Email already exists");
+        }
+        
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setEnabled(true);
+        return save(user);
+    }
+
+    @Override
+    public void toggleUserStatus(Long id) {
+        User user = findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+        user.setEnabled(!user.isEnabled());
+        save(user);
     }
 } 

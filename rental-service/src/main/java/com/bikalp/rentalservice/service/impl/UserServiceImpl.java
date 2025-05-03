@@ -40,11 +40,11 @@ public class UserServiceImpl implements UserService {
     private String baseUrl;
 
     @Override
-    public User saveUser(User user) {
+    public void saveUser(User user) {
         logger.info("Saving user: {}", user.getUsername());
         validateUserUniqueness(user);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepo.save(user);
+        userRepo.save(user);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUser(Long id, User user) {
+    public void updateUser(Long id, User user) {
         logger.info("Updating user with ID: {}", id);
         User existingUser = userRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
@@ -84,8 +84,8 @@ public class UserServiceImpl implements UserService {
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
         }
-        
-        return userRepo.save(existingUser);
+
+        userRepo.save(existingUser);
     }
 
     @Override
@@ -101,12 +101,6 @@ public class UserServiceImpl implements UserService {
     public Optional<User> findByUsername(String username) {
         logger.debug("Finding user by username: {}", username);
         return userRepo.findByUsername(username);
-    }
-
-    @Override
-    public Optional<User> findByEmail(String email) {
-        logger.debug("Finding user by email: {}", email);
-        return userRepo.findByEmail(email);
     }
 
     @Override
@@ -191,6 +185,15 @@ public class UserServiceImpl implements UserService {
         User user = findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         user.setEnabled(!user.isEnabled());
+        save(user);
+    }
+
+    @Override
+    public void changeUserRoleToLandlord(Long id) {
+        logger.info("Changing user role to landlord for ID: {}", id);
+        User user = findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        user.setRole(UserRole.LANDLORD);
         save(user);
     }
 

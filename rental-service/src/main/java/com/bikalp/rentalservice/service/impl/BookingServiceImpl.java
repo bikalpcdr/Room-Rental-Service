@@ -90,9 +90,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<Booking> getRecentBookings(int limit) {
-        return bookingRepo.findAll(
-            PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "bookingDate"))
-        ).getContent();
+        return bookingRepo.findRecentBookings(
+            PageRequest.of(0, limit)
+        );
     }
 
     @Override
@@ -114,5 +114,33 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public void delete(Long id) {
         bookingRepo.deleteById(id);
+    }
+
+    @Override
+    public long getActiveBookingsCount() {
+        return bookingRepo.countByStatus(BookingStatus.CONFIRMED);
+    }
+
+    @Override
+    public long getActiveBookingsCountByUser(Long userId) {
+        return bookingRepo.countByUserIdAndStatus(userId, BookingStatus.CONFIRMED);
+    }
+
+    @Override
+    public long getTotalBookingsByUser(Long userId) {
+        return bookingRepo.countByUserId(userId);
+    }
+
+    @Override
+    public double getTotalSpentByUser(Long userId) {
+        return bookingRepo.sumTotalAmountByUserId(userId).doubleValue();
+    }
+
+    @Override
+    public List<Booking> getRecentBookingsByUser(Long userId, int limit) {
+        return bookingRepo.findByUserIdOrderByCreatedAtDesc(
+            userId,
+            PageRequest.of(0, limit)
+        ).getContent();
     }
 } 

@@ -52,6 +52,7 @@ public class SecurityConfig {
                 auth
                     .requestMatchers("/", "/auth/**", "/css/**", "/js/**", "/images/**").permitAll()
                     .requestMatchers("/superadmin/**").hasAuthority("ROLE_SUPER_ADMIN")
+                    .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                     .requestMatchers("/landlord/**").hasAuthority("ROLE_LANDLORD")
                     .requestMatchers("/customer/**").hasAuthority("ROLE_CUSTOMER")
                     .anyRequest().authenticated();
@@ -118,6 +119,21 @@ public class SecurityConfig {
                     .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"))) {
                     log.info("Redirecting super admin to dashboard");
                     return "/superadmin/dashboard";
+                }
+                if (authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                    log.info("Redirecting admin to dashboard");
+                    return "/admin/dashboard";
+                }
+                if (authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_LANDLORD"))) {
+                    log.info("Redirecting landlord to dashboard");
+                    return "/landlord/dashboard";
+                }
+                if (authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_CUSTOMER"))) {
+                    log.info("Redirecting customer to dashboard");
+                    return "/customer/dashboard";
                 }
                 log.info("Redirecting to home page");
                 return "/";

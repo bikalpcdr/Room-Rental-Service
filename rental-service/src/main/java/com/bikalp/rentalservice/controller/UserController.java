@@ -1,75 +1,63 @@
 package com.bikalp.rentalservice.controller;
 
+import com.bikalp.rentalservice.entity.Booking;
 import com.bikalp.rentalservice.entity.User;
-import com.bikalp.rentalservice.enums.UserRole;
+import com.bikalp.rentalservice.service.BookingService;
 import com.bikalp.rentalservice.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/users")
+@Controller
+@RequestMapping("/user")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('CUSTOMER')")
 public class UserController {
 
     private final UserService userService;
+    private final BookingService bookingService;
 
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        return ResponseEntity.ok(userService.saveUser(user));
+    @GetMapping("/dashboard")
+    public String showDashboard(Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Get user's booking statistics
+        long activeBookings = bookingService.getActiveBookingsCountByUser(user.getId());
+        long totalBookings = bookingService.getTotalBookingsByUser(user.getId());
+        double totalSpent = bookingService.getTotalSpentByUser(user.getId());
+        List<Booking> recentBookings = bookingService.getRecentBookingsByUser(user.getId(), 5);
+
+        // Add data to model
+        model.addAttribute("user", user);
+        model.addAttribute("activeBookings", activeBookings);
+        model.addAttribute("totalBookings", totalBookings);
+        model.addAttribute("totalSpent", String.format("$%.2f", totalSpent));
+        model.addAttribute("recentBookings", recentBookings);
+
+        return "user/dashboard";
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return userService.getUserById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/bookings")
+    public String showBookings() {
+        return "user/bookings";
     }
 
-    @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    @GetMapping("/profile")
+    public String showProfile() {
+        return "user/profile";
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
-        return ResponseEntity.ok(userService.updateUser(id, user));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/username/{username}")
-    public ResponseEntity<User> findByUsername(@PathVariable String username) {
-        return userService.findByUsername(username)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/email/{email}")
-    public ResponseEntity<User> findByEmail(@PathVariable String email) {
-        return userService.findByEmail(email)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/role/{role}")
-    public ResponseEntity<List<User>> getUsersByRole(@PathVariable UserRole role) {
-        return ResponseEntity.ok(userService.getUsersByRole(role));
-    }
-
-    @GetMapping("/check-username/{username}")
-    public ResponseEntity<Boolean> existsByUsername(@PathVariable String username) {
-        return ResponseEntity.ok(userService.existsByUsername(username));
-    }
-
-    @GetMapping("/check-email/{email}")
-    public ResponseEntity<Boolean> existsByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(userService.existsByEmail(email));
+    @GetMapping("/settings")
+    public String showSettings() {
+        return "user/settings";
     }
 } 

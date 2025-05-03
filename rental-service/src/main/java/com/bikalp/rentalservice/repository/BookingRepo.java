@@ -55,4 +55,61 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
     
     @Query("SELECT b FROM Booking b WHERE b.status = :status ORDER BY b.bookingDate DESC")
     List<Booking> findRecentBookingsByStatus(@Param("status") BookingStatus status, Pageable pageable);
+
+    /**
+     * Count bookings by status
+     * @param status booking status
+     * @return count of bookings
+     */
+    long countByStatus(BookingStatus status);
+
+    /**
+     * Sum total amount of bookings by status
+     * @param status booking status
+     * @return sum of total amounts
+     */
+    @Query("SELECT COALESCE(SUM(b.totalPrice), 0) FROM Booking b WHERE b.status = :status")
+    BigDecimal sumTotalAmountByStatus(@Param("status") BookingStatus status);
+
+    /**
+     * Count bookings by user ID and status
+     * @param userId the user ID
+     * @param status the booking status
+     * @return count of bookings
+     */
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.customer.id = :userId AND b.status = :status")
+    long countByUserIdAndStatus(@Param("userId") Long userId, @Param("status") BookingStatus status);
+
+    /**
+     * Count all bookings by user ID
+     * @param userId the user ID
+     * @return count of bookings
+     */
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.customer.id = :userId")
+    long countByUserId(@Param("userId") Long userId);
+
+    /**
+     * Sum total amount of bookings by user ID
+     * @param userId the user ID
+     * @return sum of total amounts
+     */
+    @Query("SELECT COALESCE(SUM(b.totalPrice), 0) FROM Booking b WHERE b.customer.id = :userId")
+    BigDecimal sumTotalAmountByUserId(@Param("userId") Long userId);
+
+    /**
+     * Find bookings by user ID ordered by creation date
+     * @param userId the user ID
+     * @param pageable pagination information
+     * @return page of bookings
+     */
+    @Query("SELECT b FROM Booking b WHERE b.customer.id = :userId ORDER BY b.bookingDate DESC")
+    Page<Booking> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId, Pageable pageable);
+
+    /**
+     * Get recent bookings
+     * @param limit number of bookings to return
+     * @return list of recent bookings
+     */
+    @Query("SELECT b FROM Booking b ORDER BY b.bookingDate DESC")
+    List<Booking> findRecentBookings(Pageable pageable);
 }

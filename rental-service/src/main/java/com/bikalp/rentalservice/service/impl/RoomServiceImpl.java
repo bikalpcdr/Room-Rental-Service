@@ -3,6 +3,7 @@ package com.bikalp.rentalservice.service.impl;
 import com.bikalp.rentalservice.entity.Room;
 import com.bikalp.rentalservice.entity.RoomImage;
 import com.bikalp.rentalservice.enums.RoomType;
+import com.bikalp.rentalservice.repository.RoomImageRepo;
 import com.bikalp.rentalservice.repository.RoomRepo;
 import com.bikalp.rentalservice.service.RoomService;
 import com.bikalp.rentalservice.util.ImageUtil;
@@ -16,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +27,7 @@ import org.slf4j.LoggerFactory;
 public class RoomServiceImpl implements RoomService {
 
     private final RoomRepo roomRepo;
+    private final RoomImageRepo roomImageRepository;
     private static final Logger log = LoggerFactory.getLogger(RoomServiceImpl.class);
 
     @Override
@@ -151,21 +154,21 @@ public class RoomServiceImpl implements RoomService {
                 List<String> base64Images = ImageUtil.convertMultipleToBase64(images);
                 log.info("Successfully converted {} images to Base64", base64Images.size());
                 
-                List<RoomImage> roomImages = base64Images.stream()
-                        .map(base64Image -> {
-                            RoomImage roomImage = new RoomImage();
-                            roomImage.setImageData(base64Image);
-                            roomImage.setRoom(room);
-                            // Set the first image as primary
-                            roomImage.setPrimary(base64Images.indexOf(base64Image) == 0);
-                            log.info("Created room image, primary: {}", roomImage.isPrimary());
-                            return roomImage;
-                        })
-                        .toList();
+                List<RoomImage> roomImages = new ArrayList<>();
+                for (int i = 0; i < base64Images.size(); i++) {
+                    RoomImage roomImage = new RoomImage();
+                    roomImage.setImageData(base64Images.get(i));
+                    roomImage.setRoom(room);
+                    // Set only the first image as primary
+                    roomImage.setPrimary(i == 0);
+                    log.info("Created room image, primary: {}", roomImage.isPrimary());
+                    roomImages.add(roomImage);
+                }
+                
                 log.info("Setting {} room images to room", roomImages.size());
                 room.setRoomImages(roomImages);
                 
-                // Log room state before saving
+                // Log room state before save
                 log.info("Room state before save - ID: {}, Title: {}, Images count: {}", 
                         room.getId(), room.getTitle(), 
                         room.getRoomImages() != null ? room.getRoomImages().size() : 0);
@@ -183,6 +186,10 @@ public class RoomServiceImpl implements RoomService {
         if (savedRoom != null) {
             log.info("Verification - Saved room has {} images", 
                     savedRoom.getRoomImages() != null ? savedRoom.getRoomImages().size() : 0);
+            if (savedRoom.getRoomImages() != null) {
+                savedRoom.getRoomImages().forEach(img -> 
+                    log.info("Image ID: {}, Primary: {}", img.getId(), img.isPrimary()));
+            }
         } else {
             log.error("Room not found after saving!");
         }
@@ -190,29 +197,78 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     @Transactional
-    public void updateRoomWithImages(Long id, Room room, List<MultipartFile> images) {
+    public void updateRoomWithImages(Long id, Room room, List<MultipartFile> images, List<Long> removedImageIds) {
         Room existingRoom = getRoomById(id);
         room.setId(id);
         room.setLandlord(existingRoom.getLandlord());
 
+        // 1. Start with all existing images except those marked for removal
+        List<RoomImage> finalImages = new ArrayList<>();
+        if (existingRoom.getRoomImages() != null) {
+            for (RoomImage img : existingRoom.getRoomImages()) {
+                if (removedImageIds == null || !removedImageIds.contains(img.getId())) {
+                    finalImages.add(img);
+                } else {
+                    // Remove from DB
+                    roomImageRepository.deleteById(img.getId());
+                }
+            }
+        }
+
+        // 2. Add new images
         if (images != null && !images.isEmpty()) {
             try {
                 List<String> base64Images = ImageUtil.convertMultipleToBase64(images);
-                List<RoomImage> roomImages = base64Images.stream()
-                        .map(base64Image -> {
-                            RoomImage roomImage = new RoomImage();
-                            roomImage.setImageData(base64Image);
-                            roomImage.setRoom(room);
-                            // Set the first image as primary
-                            roomImage.setPrimary(base64Images.indexOf(base64Image) == 0);
-                            return roomImage;
-                        })
-                        .toList();
-                room.setRoomImages(roomImages);
+                for (String base64 : base64Images) {
+                    RoomImage roomImage = new RoomImage();
+                    roomImage.setImageData(base64);
+                    roomImage.setRoom(room);
+                    roomImage.setPrimary(false);
+                    finalImages.add(roomImage);
+                }
             } catch (IOException e) {
                 throw new RuntimeException("Error processing images", e);
             }
         }
+
+        // Debug logging
+        log.info("Final images to save (count={}):", finalImages.size());
+        for (RoomImage img : finalImages) {
+            log.info("Image ID: {}, isNew: {}", img.getId(), img.getId() == null);
+        }
+
+        // 3. Save the combined list
+        room.setRoomImages(finalImages);
         roomRepo.save(room);
+    }
+
+    @Override
+    @Transactional
+    public void removeImages(List<Long> imageIds) {
+        log.info("Removing images with IDs: {}", imageIds);
+        for (Long imageId : imageIds) {
+            try {
+                RoomImage image = roomImageRepository.findById(imageId)
+                    .orElseThrow(() -> new RuntimeException("Image not found with id: " + imageId));
+                
+                // Get the room and remove the image from its list
+                Room room = image.getRoom();
+                if (room != null) {
+                    List<RoomImage> roomImages = room.getRoomImages();
+                    if (roomImages != null) {
+                        roomImages.removeIf(img -> img.getId().equals(imageId));
+                        room.setRoomImages(roomImages);
+                        roomRepo.save(room);
+                    }
+                }
+                
+                // Delete the image
+                roomImageRepository.deleteById(imageId);
+                log.info("Removed image with ID: {}", imageId);
+            } catch (Exception e) {
+                log.error("Error removing image with ID {}: {}", imageId, e.getMessage());
+                throw new RuntimeException("Error removing image: " + e.getMessage());
+            }
+        }
     }
 } 

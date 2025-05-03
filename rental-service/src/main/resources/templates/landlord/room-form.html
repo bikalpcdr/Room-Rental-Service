@@ -37,6 +37,26 @@
         .logout-button:hover {
             color: #fff;
         }
+        #imagePreview .card {
+            margin-bottom: 10px;
+        }
+        #imagePreview img {
+            border-radius: 5px;
+        }
+        #imagePreview .btn-danger {
+            padding: 0.25rem 0.5rem;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(220, 53, 69, 0.8);
+            border: none;
+        }
+        #imagePreview .btn-danger:hover {
+            background-color: rgba(220, 53, 69, 1);
+        }
     </style>
 </head>
 <body>
@@ -170,8 +190,31 @@
 
                             <div class="mb-3">
                                 <label for="images" class="form-label">Room Images</label>
-                                <input type="file" class="form-control" id="images" name="images" multiple accept="image/*" required>
+                                <input type="file" class="form-control" id="images" name="images" multiple accept="image/*"
+                                       th:required="${room.id == null}"
+                                       onchange="previewImages(this)">
                                 <div class="form-text">You can select multiple images. The first image will be set as the primary image.</div>
+
+                                <!-- Image preview container -->
+                                <div id="imagePreview" class="mt-3">
+                                    <div class="row g-2" id="previewContainer">
+                                        <!-- Existing images -->
+                                        <div class="col-md-3" th:each="image, stat : ${room.roomImages}" data-image-id="[[${image.id}]]">
+                                            <div class="card position-relative">
+                                                <img th:src="'data:image/jpeg;base64,' + ${image.imageData}"
+                                                     class="card-img-top" style="height: 150px; object-fit: cover;">
+                                                <button type="button" class="btn btn-danger btn-sm position-absolute"
+                                                        style="top: 5px; right: 5px; z-index: 1;"
+                                                        onclick="removeExistingImage('[[${image.id}]]')">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                                <div class="card-body p-2">
+                                                    <small class="text-muted">Existing Image</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="mb-3 form-check">
@@ -197,5 +240,146 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let existingImagesArray = [];
+        let removedImages = new Set();
+        let selectedFilesList = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('#existingImagesData > div').forEach(div => {
+                existingImagesArray.push({
+                    id: String(div.getAttribute('data-id')),
+                    src: div.getAttribute('data-src')
+                });
+            });
+        });
+
+        function previewImages(input) {
+            const previewContainer = document.getElementById('previewContainer');
+            // Accumulate files instead of replacing
+            for (let i = 0; i < input.files.length; i++) {
+                selectedFilesList.push(input.files[i]);
+            }
+            previewContainer.innerHTML = '';
+
+            // Render all existing images not in removedImages
+            existingImagesArray.forEach(img => {
+                if (!removedImages.has(String(img.id))) {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-3';
+                    col.setAttribute('data-image-id', img.id);
+
+                    const card = document.createElement('div');
+                    card.className = 'card position-relative';
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'btn btn-danger btn-sm position-absolute';
+                    removeBtn.style.top = '5px';
+                    removeBtn.style.right = '5px';
+                    removeBtn.style.zIndex = '1';
+                    removeBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
+                    removeBtn.onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        removeExistingImage(String(img.id));
+                    };
+
+                    const image = document.createElement('img');
+                    image.className = 'card-img-top';
+                    image.style.height = '150px';
+                    image.style.objectFit = 'cover';
+                    image.src = img.src;
+
+                    const cardBody = document.createElement('div');
+                    cardBody.className = 'card-body p-2';
+                    const label = document.createElement('small');
+                    label.className = 'text-muted';
+                    label.textContent = 'Existing Image';
+                    cardBody.appendChild(label);
+
+                    card.appendChild(image);
+                    card.appendChild(cardBody);
+                    card.appendChild(removeBtn);
+                    col.appendChild(card);
+                    previewContainer.appendChild(col);
+                }
+            });
+
+            // Render new images
+            selectedFilesList.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-3';
+
+                    const card = document.createElement('div');
+                    card.className = 'card position-relative';
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'btn btn-danger btn-sm position-absolute';
+                    removeBtn.style.top = '5px';
+                    removeBtn.style.right = '5px';
+                    removeBtn.style.zIndex = '1';
+                    removeBtn.innerHTML = '<i class=\'bi bi-x-lg\'></i>';
+                    removeBtn.onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        removeImage(index);
+                    };
+
+                    const img = document.createElement('img');
+                    img.className = 'card-img-top';
+                    img.style.height = '150px';
+                    img.style.objectFit = 'cover';
+                    img.src = e.target.result;
+
+                    const cardBody = document.createElement('div');
+                    cardBody.className = 'card-body p-2';
+                    const fileName = document.createElement('small');
+                    fileName.className = 'text-muted';
+                    fileName.textContent = file.name;
+                    cardBody.appendChild(fileName);
+
+                    card.appendChild(img);
+                    card.appendChild(cardBody);
+                    card.appendChild(removeBtn);
+                    col.appendChild(card);
+                    previewContainer.appendChild(col);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            updateFileInput();
+        }
+
+        function removeExistingImage(imageId) {
+            removedImages.add(String(imageId));
+            previewImages({ files: selectedFilesList });
+            // Add hidden input to track removed images
+            const form = document.querySelector('form');
+            const existingInput = form.querySelector(`input[name=\"removedImages\"][value=\"${imageId}\"]`);
+            if (!existingInput) {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'removedImages';
+                hiddenInput.value = imageId;
+                form.appendChild(hiddenInput);
+            }
+        }
+
+        function removeImage(index) {
+            selectedFilesList.splice(index, 1);
+            previewImages({ files: selectedFilesList });
+        }
+
+        function updateFileInput() {
+            const fileInput = document.getElementById('images');
+            const dt = new DataTransfer();
+            selectedFilesList.forEach(file => {
+                dt.items.add(file);
+            });
+            fileInput.files = dt.files;
+        }
+    </script>
 </body>
 </html> 

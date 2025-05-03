@@ -54,6 +54,9 @@ public interface RoomService {
      * @param id Room ID
      * @param room The room to update
      * @param images List of image files
+     * @param removedImageIds List of image IDs to remove
      */
-    void updateRoomWithImages(Long id, Room room, List<MultipartFile> images);
+    void updateRoomWithImages(Long id, Room room, List<MultipartFile> images, List<Long> removedImageIds);
+
+    void removeImages(List<Long> imageIds);
 } 

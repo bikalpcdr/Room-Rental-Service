@@ -136,7 +136,18 @@ public class LandlordController {
             log.info("Room details - Title: {}, Type: {}, Price: {}", 
                     room.getTitle(), room.getRoomType(), room.getPricePerMonth());
             
-            log.info("Processing {} images", images != null ? images.size() : 0);
+            if (images != null) {
+                log.info("Received {} images", images.size());
+                for (MultipartFile image : images) {
+                    log.info("Image details - Name: {}, Size: {} bytes, Content Type: {}", 
+                            image.getOriginalFilename(), 
+                            image.getSize(), 
+                            image.getContentType());
+                }
+            } else {
+                log.warn("No images received in the request");
+            }
+            
             roomService.saveRoomWithImages(room, images);
             
             log.info("Room created successfully with ID: {}", room.getId());
@@ -166,14 +177,29 @@ public class LandlordController {
     }
 
     @PostMapping("/rooms/{id}/edit")
-    public String updateRoom(@PathVariable Long id,
-                            @ModelAttribute Room room,
-                            @RequestParam("images") List<MultipartFile> images) {
+    public String updateRoom(@PathVariable Long id, 
+                           @ModelAttribute Room room,
+                           @RequestParam(value = "images", required = false) List<MultipartFile> images,
+                           @RequestParam(value = "removedImages", required = false) List<Long> removedImageIds,
+                           Model model) {
         try {
-            roomService.updateRoomWithImages(id, room, images);
-            return "redirect:/landlord/rooms";
+            User currentUser = getCurrentUser();
+            if (currentUser == null) {
+                return "redirect:/auth/login";
+            }
+
+            Room existingRoom = roomService.getRoomById(id);
+            if (existingRoom == null) {
+                return "redirect:/landlord/rooms?error=Room not found";
+            }
+
+            // Always use the new method that handles both existing and new images
+            roomService.updateRoomWithImages(id, room, images, removedImageIds);
+
+            return "redirect:/landlord/rooms?success=Room updated successfully";
         } catch (Exception e) {
-            return "redirect:/landlord/rooms/" + id + "/edit?error=" + e.getMessage();
+            model.addAttribute("error", "Error updating room: " + e.getMessage());
+            return "redirect:/landlord/rooms?error=Error updating room";
         }
     }
 

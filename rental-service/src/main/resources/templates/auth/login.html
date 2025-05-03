@@ -70,11 +70,11 @@
 
             <form th:action="@{/auth/login}" method="post" th:object="${loginRequest}">
                 <div class="form-floating mb-3">
-                    <input type="email" class="form-control" id="email" name="email" 
-                           th:field="*{email}" placeholder="name@example.com" required>
-                    <label for="email">Email address</label>
-                    <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" 
-                         th:errors="*{email}"></div>
+                    <input type="text" class="form-control" id="emailOrUsername" name="emailOrUsername" 
+                           th:field="*{emailOrUsername}" placeholder="Email or username" required>
+                    <label for="emailOrUsername">Email or username</label>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('emailOrUsername')}" 
+                         th:errors="*{emailOrUsername}"></div>
                 </div>
 
                 <div class="form-floating mb-3">

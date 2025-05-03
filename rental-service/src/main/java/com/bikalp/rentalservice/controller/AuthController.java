@@ -43,8 +43,9 @@ public class AuthController {
     @PostMapping("/login")
     public String login(@Valid @ModelAttribute("loginRequest") LoginRequest loginRequest,
                        BindingResult bindingResult,
-                       Model model) {
-        log.info("Received login request for email: {}", loginRequest.getEmail());
+                       Model model,
+                       RedirectAttributes redirectAttributes) {
+        log.info("Received login request for email or username: {}", loginRequest.getEmailOrUsername());
         
         if (bindingResult.hasErrors()) {
             log.warn("Login request validation failed: {}", bindingResult.getAllErrors());
@@ -52,7 +53,14 @@ public class AuthController {
             return "auth/login";
         }
 
-        return "auth/login";
+        try {
+            authService.login(loginRequest);
+            return "redirect:/";
+        } catch (AuthenticationException e) {
+            log.warn("Authentication failed: {}", e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            return "auth/login";
+        }
     }
 
     @GetMapping("/register")

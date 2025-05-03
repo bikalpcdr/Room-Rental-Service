@@ -43,25 +43,26 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void login(LoginRequest loginRequest) throws AuthenticationException {
         try {
-            log.info("Starting authentication process for email: {}", loginRequest.getEmail());
+            log.info("Starting authentication process for: {}", loginRequest.getEmailOrUsername());
             
             // Check if user exists before attempting authentication
-            User user = userRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> {
-                    log.warn("User not found with email: {}", loginRequest.getEmail());
-                    return new AuthenticationException("User not found");
-                });
+            User user = userRepository.findByEmail(loginRequest.getEmailOrUsername())
+                .orElseGet(() -> userRepository.findByUsername(loginRequest.getEmailOrUsername())
+                    .orElseThrow(() -> {
+                        log.warn("User not found with email/username: {}", loginRequest.getEmailOrUsername());
+                        return new AuthenticationException("User not found");
+                    }));
             
             log.info("User found with role: {}", user.getRole());
             
             if (!user.isEnabled()) {
-                log.warn("User account is disabled: {}", loginRequest.getEmail());
+                log.warn("User account is disabled: {}", loginRequest.getEmailOrUsername());
                 throw new AuthenticationException("Account is disabled");
             }
             
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                    loginRequest.getEmail(),
+                    loginRequest.getEmailOrUsername(),
                     loginRequest.getPassword()
                 )
             );
@@ -70,8 +71,8 @@ public class AuthServiceImpl implements AuthService {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             
         } catch (Exception e) {
-            log.error("Authentication failed for email {}: {}", loginRequest.getEmail(), e.getMessage(), e);
-            throw new AuthenticationException("Invalid email or password");
+            log.error("Authentication failed for {}: {}", loginRequest.getEmailOrUsername(), e.getMessage(), e);
+            throw new AuthenticationException("Invalid credentials");
         }
     }
 

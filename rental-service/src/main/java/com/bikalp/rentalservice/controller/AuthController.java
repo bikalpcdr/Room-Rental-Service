@@ -33,10 +33,18 @@ public class AuthController {
     private final UserService userService;
 
     @GetMapping("/login")
-    public String showLoginForm(Model model) {
+    public String showLoginForm(Model model, HttpSession session) {
         if (!model.containsAttribute("loginRequest")) {
             model.addAttribute("loginRequest", new LoginRequest());
         }
+        
+        // Check for error message in session
+        String error = (String) session.getAttribute("error");
+        if (error != null) {
+            model.addAttribute("error", error);
+            session.removeAttribute("error");
+        }
+        
         return "auth/login";
     }
 

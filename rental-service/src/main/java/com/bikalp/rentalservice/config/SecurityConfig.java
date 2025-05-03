@@ -64,7 +64,11 @@ public class SecurityConfig {
                     .usernameParameter("emailOrUsername")
                     .passwordParameter("password")
                     .successHandler(authenticationSuccessHandler())
-                    .failureUrl("/auth/login?error=true")
+                    .failureHandler((request, response, exception) -> {
+                        log.warn("Authentication failed: {}", exception.getMessage());
+                        request.getSession().setAttribute("error", "Invalid email/username or password");
+                        response.sendRedirect("/auth/login");
+                    })
                     .permitAll();
             })
             .logout(logout -> {

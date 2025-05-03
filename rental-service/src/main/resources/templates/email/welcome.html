@@ -19,6 +19,13 @@
             border-radius: 5px;
             border: 1px solid #ddd;
         }
+        .credentials {
+            background-color: #fff;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
         .button {
             display: inline-block;
             padding: 10px 20px;
@@ -38,11 +45,18 @@
 <body>
     <div class="container">
         <h2>Welcome to Rental Service!</h2>
-        <p>Dear ${name},</p>
+        <p>Dear <span th:text="${name}">User</span>,</p>
         <p>We're excited to have you on board! Your account has been successfully created.</p>
+        
+        <div class="credentials">
+            <h3>Your Login Credentials:</h3>
+            <p><strong>Username:</strong> <span th:text="${username}">username</span></p>
+            <p><strong>Password:</strong> <span th:text="${password}">password</span></p>
+        </div>
+
         <p>You can now log in and start exploring our rental listings.</p>
         <p>
-            <a href="${baseUrl}/login" class="button">Log In to Your Account</a>
+            <a th:href="@{${baseUrl} + '/auth/login'}" class="button">Log In to Your Account</a>
         </p>
         <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
         <div class="footer">

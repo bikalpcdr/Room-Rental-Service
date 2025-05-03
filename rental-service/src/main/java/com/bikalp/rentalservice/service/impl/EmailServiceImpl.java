@@ -1,28 +1,24 @@
 package com.bikalp.rentalservice.service.impl;
 
+import com.bikalp.rentalservice.exception.EmailException;
 import com.bikalp.rentalservice.service.EmailService;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
 
+    private static final Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
     private final JavaMailSender mailSender;
-    private final Configuration freemarkerConfig;
 
     @Value("${spring.mail.username}")
     private String fromEmail;
@@ -31,122 +27,128 @@ public class EmailServiceImpl implements EmailService {
     private String frontendUrl;
 
     @Override
-    public void sendPasswordResetEmail(String toEmail, String resetUrl) {
+    public void sendPasswordResetEmail(String toEmail, String resetUrl) throws EmailException {
         try {
+            validateEmailConfiguration();
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setFrom(fromEmail);
             helper.setTo(toEmail);
             helper.setSubject("Password Reset Request");
+            
+            String htmlContent = String.format(
+                "<html><body>" +
+                "<h2>Password Reset Request</h2>" +
+                "<p>You have requested to reset your password. Click the link below to proceed:</p>" +
+                "<p><a href='%s'>Reset Password</a></p>" +
+                "<p>If you did not request this, please ignore this email.</p>" +
+                "</body></html>",
+                resetUrl
+            );
 
-            Map<String, Object> model = new HashMap<>();
-            model.put("resetUrl", resetUrl);
-            model.put("frontendUrl", frontendUrl);
-
-            Template template = freemarkerConfig.getTemplate("password-reset-email.ftl");
-            String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
-
-            helper.setText(html, true);
+            helper.setText(htmlContent, true);
             mailSender.send(message);
-        } catch (MessagingException | IOException | TemplateException e) {
-            throw new RuntimeException("Failed to send password reset email", e);
+            logger.info("Password reset email sent to: {}", toEmail);
+        } catch (MessagingException e) {
+            logger.error("Failed to send password reset email to: {}", toEmail, e);
+            throw new EmailException("Failed to send password reset email", e);
         }
     }
 
     @Override
-    public void sendVerificationEmail(String toEmail, String verificationUrl) {
+    public void sendVerificationEmail(String toEmail, String verificationUrl) throws EmailException {
         try {
+            validateEmailConfiguration();
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setFrom(fromEmail);
             helper.setTo(toEmail);
             helper.setSubject("Email Verification");
+            
+            String htmlContent = String.format(
+                "<html><body>" +
+                "<h2>Email Verification</h2>" +
+                "<p>Please click the link below to verify your email address:</p>" +
+                "<p><a href='%s'>Verify Email</a></p>" +
+                "<p>If you did not create an account, please ignore this email.</p>" +
+                "</body></html>",
+                verificationUrl
+            );
 
-            Map<String, Object> model = new HashMap<>();
-            model.put("verificationUrl", verificationUrl);
-            model.put("frontendUrl", frontendUrl);
-
-            Template template = freemarkerConfig.getTemplate("verification-email.ftl");
-            String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
-
-            helper.setText(html, true);
+            helper.setText(htmlContent, true);
             mailSender.send(message);
-        } catch (MessagingException | IOException | TemplateException e) {
-            throw new RuntimeException("Failed to send verification email", e);
+            logger.info("Verification email sent to: {}", toEmail);
+        } catch (MessagingException e) {
+            logger.error("Failed to send verification email to: {}", toEmail, e);
+            throw new EmailException("Failed to send verification email", e);
         }
     }
 
     @Override
-    public void sendWelcomeEmail(String email, String name) {
+    public void sendWelcomeEmail(String toEmail, String subject, String htmlContent) throws EmailException {
         try {
+            validateEmailConfiguration();
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            
-            Map<String, Object> model = new HashMap<>();
-            model.put("name", name);
-            model.put("baseUrl", frontendUrl);
-            
-            Template template = freemarkerConfig.getTemplate("email/welcome.html");
-            String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
-            
+
             helper.setFrom(fromEmail);
-            helper.setTo(email);
-            helper.setSubject("Welcome to Rental Service");
-            helper.setText(html, true);
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
             
             mailSender.send(message);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to send welcome email", e);
+            logger.info("Welcome email sent to: {}", toEmail);
+        } catch (MessagingException e) {
+            logger.error("Failed to send welcome email to: {}", toEmail, e);
+            throw new EmailException("Failed to send welcome email", e);
         }
     }
 
     @Override
-    public void sendBookingConfirmationEmail(String email, String bookingDetails) {
+    public void sendBookingConfirmationEmail(String toEmail, String subject, String htmlContent) throws EmailException {
         try {
+            validateEmailConfiguration();
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            
-            Map<String, Object> model = new HashMap<>();
-            model.put("bookingDetails", bookingDetails);
-            model.put("baseUrl", frontendUrl);
-            
-            Template template = freemarkerConfig.getTemplate("email/booking-confirmation.html");
-            String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
-            
+
             helper.setFrom(fromEmail);
-            helper.setTo(email);
-            helper.setSubject("Booking Confirmation");
-            helper.setText(html, true);
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
             
             mailSender.send(message);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to send booking confirmation email", e);
+            logger.info("Booking confirmation email sent to: {}", toEmail);
+        } catch (MessagingException e) {
+            logger.error("Failed to send booking confirmation email to: {}", toEmail, e);
+            throw new EmailException("Failed to send booking confirmation email", e);
         }
     }
 
     @Override
-    public void sendBookingCancellationEmail(String email, String bookingDetails) {
+    public void sendBookingCancellationEmail(String toEmail, String subject, String htmlContent) throws EmailException {
         try {
+            validateEmailConfiguration();
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            
-            Map<String, Object> model = new HashMap<>();
-            model.put("bookingDetails", bookingDetails);
-            model.put("baseUrl", frontendUrl);
-            
-            Template template = freemarkerConfig.getTemplate("email/booking-cancellation.html");
-            String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
-            
+
             helper.setFrom(fromEmail);
-            helper.setTo(email);
-            helper.setSubject("Booking Cancellation");
-            helper.setText(html, true);
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
             
             mailSender.send(message);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to send booking cancellation email", e);
+            logger.info("Booking cancellation email sent to: {}", toEmail);
+        } catch (MessagingException e) {
+            logger.error("Failed to send booking cancellation email to: {}", toEmail, e);
+            throw new EmailException("Failed to send booking cancellation email", e);
+        }
+    }
+
+    private void validateEmailConfiguration() {
+        if (!StringUtils.hasText(fromEmail) || fromEmail.equals("your-email@gmail.com")) {
+            throw new EmailException("Email configuration is not properly set up. Please check application.properties");
         }
     }
 } 

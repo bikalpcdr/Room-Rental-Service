@@ -25,6 +25,6 @@ public interface UserService {
     User save(User user);
     void delete(Long id);
     Page<User> findAllUsers(Pageable pageable, String search);
-    User createUser(User user);
+    void createUser(User user);
     void toggleUserStatus(Long id);
 } 

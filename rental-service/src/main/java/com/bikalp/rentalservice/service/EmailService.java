@@ -1,38 +1,48 @@
 package com.bikalp.rentalservice.service;
 
+import com.bikalp.rentalservice.exception.EmailException;
+
 public interface EmailService {
     /**
      * Sends a password reset email to the user
      * @param toEmail The recipient's email address
      * @param resetUrl The password reset URL
+     * @throws EmailException If email sending fails
      */
-    void sendPasswordResetEmail(String toEmail, String resetUrl);
+    void sendPasswordResetEmail(String toEmail, String resetUrl) throws EmailException;
 
     /**
      * Sends an email verification link to the user
      * @param toEmail The recipient's email address
      * @param verificationUrl The email verification URL
+     * @throws EmailException If email sending fails
      */
-    void sendVerificationEmail(String toEmail, String verificationUrl);
+    void sendVerificationEmail(String toEmail, String verificationUrl) throws EmailException;
 
     /**
      * Sends a welcome email to newly registered users
-     * @param email The recipient's email address
-     * @param name The user's name
+     * @param toEmail The recipient's email address
+     * @param subject The email subject
+     * @param htmlContent The HTML content of the email
+     * @throws EmailException If email sending fails
      */
-    void sendWelcomeEmail(String email, String name);
+    void sendWelcomeEmail(String toEmail, String subject, String htmlContent) throws EmailException;
 
     /**
      * Sends a booking confirmation email
-     * @param email The recipient's email address
-     * @param bookingDetails The booking details
+     * @param toEmail The recipient's email address
+     * @param subject The email subject
+     * @param htmlContent The HTML content of the email
+     * @throws EmailException If email sending fails
      */
-    void sendBookingConfirmationEmail(String email, String bookingDetails);
+    void sendBookingConfirmationEmail(String toEmail, String subject, String htmlContent) throws EmailException;
 
     /**
      * Sends a booking cancellation email
-     * @param email The recipient's email address
-     * @param bookingDetails The booking details
+     * @param toEmail The recipient's email address
+     * @param subject The email subject
+     * @param htmlContent The HTML content of the email
+     * @throws EmailException If email sending fails
      */
-    void sendBookingCancellationEmail(String email, String bookingDetails);
+    void sendBookingCancellationEmail(String toEmail, String subject, String htmlContent) throws EmailException;
 } 

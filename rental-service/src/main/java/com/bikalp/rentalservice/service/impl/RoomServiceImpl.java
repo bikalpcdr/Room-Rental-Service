@@ -23,39 +23,8 @@ public class RoomServiceImpl implements RoomService {
     private final RoomRepo roomRepo;
 
     @Override
-    public Room saveRoom(Room room) {
-        return roomRepo.save(room);
-    }
-
-    @Override
     public Optional<Room> getRoomById(Long id) {
         return roomRepo.findById(id);
-    }
-
-    @Override
-    public Page<Room> getAllRooms(Pageable pageable) {
-        return roomRepo.findAll(pageable);
-    }
-
-    @Override
-    public Room updateRoom(Long id, Room room) {
-        Room existingRoom = roomRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Room not found with id: " + id));
-        
-        existingRoom.setTitle(room.getTitle());
-        existingRoom.setDescription(room.getDescription());
-        existingRoom.setPricePerMonth(room.getPricePerMonth());
-        existingRoom.setRoomType(room.getRoomType());
-        existingRoom.setAvailable(room.isAvailable());
-        existingRoom.setAddress(room.getAddress());
-        existingRoom.setLandlord(room.getLandlord());
-        
-        return roomRepo.save(existingRoom);
-    }
-
-    @Override
-    public void deleteRoom(Long id) {
-        roomRepo.deleteById(id);
     }
 
     @Override
@@ -69,24 +38,11 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public Page<Room> getRoomsByLandlordId(Long landlordId, Pageable pageable) {
-        return roomRepo.findByLandlordId(landlordId, pageable);
-    }
-
-    @Override
     public Page<Room> searchRooms(String keyword, RoomType roomType, Double minPrice, Double maxPrice, Pageable pageable) {
         if (keyword != null && !keyword.isEmpty()) {
             return roomRepo.searchRooms(keyword, roomType, minPrice, maxPrice, pageable);
         }
         return roomRepo.findByFilters(roomType, minPrice, maxPrice, pageable);
-    }
-
-    @Override
-    public Room updateRoomAvailability(Long id, boolean available) {
-        Room room = roomRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Room not found with id: " + id));
-        room.setAvailable(available);
-        return roomRepo.save(room);
     }
 
     @Override

@@ -73,4 +73,27 @@ public class BookingServiceImpl implements BookingService {
             PageRequest.of(0, limit)
         ).getContent();
     }
+
+    @Override
+    public long getActiveBookingsCountByLandlord(Long landlordId) {
+        return bookingRepo.countByLandlordIdAndStatus(landlordId, BookingStatus.CONFIRMED);
+    }
+
+    @Override
+    public BigDecimal getTotalRevenueByLandlord(Long landlordId) {
+        return bookingRepo.sumTotalAmountByLandlordId(landlordId);
+    }
+
+    @Override
+    public List<Booking> getRecentBookingsByLandlord(Long landlordId, int limit) {
+        return bookingRepo.findByLandlordIdOrderByCreatedAtDesc(
+            landlordId,
+            PageRequest.of(0, limit)
+        ).getContent();
+    }
+
+    @Override
+    public List<Booking> getBookingsByLandlord(Long landlordId) {
+        return bookingRepo.findByLandlordId(landlordId);
+    }
 } 

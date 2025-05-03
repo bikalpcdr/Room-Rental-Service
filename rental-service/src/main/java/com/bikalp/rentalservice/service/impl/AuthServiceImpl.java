@@ -45,34 +45,50 @@ public class AuthServiceImpl implements AuthService {
         try {
             log.info("Starting authentication process for: {}", loginRequest.getEmailOrUsername());
             
-            // Check if user exists before attempting authentication
+            // First try to find user by email
             User user = userRepository.findByEmail(loginRequest.getEmailOrUsername())
-                .orElseGet(() -> userRepository.findByUsername(loginRequest.getEmailOrUsername())
-                    .orElseThrow(() -> {
-                        log.warn("User not found with email/username: {}", loginRequest.getEmailOrUsername());
-                        return new AuthenticationException("User not found");
-                    }));
+                .orElseGet(() -> {
+                    log.info("User not found by email, trying username");
+                    return userRepository.findByUsername(loginRequest.getEmailOrUsername())
+                        .orElseThrow(() -> {
+                            log.warn("User not found with email/username: {}", loginRequest.getEmailOrUsername());
+                            return new AuthenticationException("User not found");
+                        });
+                });
             
-            log.info("User found with role: {}", user.getRole());
+            log.info("User found: {} with role: {}", user.getUsername(), user.getRole());
             
             if (!user.isEnabled()) {
-                log.warn("User account is disabled: {}", loginRequest.getEmailOrUsername());
+                log.warn("User account is disabled: {}", user.getUsername());
                 throw new AuthenticationException("Account is disabled");
             }
             
-            Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                    loginRequest.getEmailOrUsername(),
-                    loginRequest.getPassword()
-                )
+            // Verify password
+            if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+                log.warn("Invalid password for user: {}", user.getUsername());
+                throw new AuthenticationException("Invalid password");
+            }
+            
+            // Create authentication token
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                user.getUsername(), // Use username for authentication
+                loginRequest.getPassword(),
+                user.getAuthorities()
             );
             
+            // Authenticate
+            Authentication authentication = authenticationManager.authenticate(authToken);
             log.info("Authentication successful for user: {}", authentication.getName());
+            
+            // Set authentication in security context
             SecurityContextHolder.getContext().setAuthentication(authentication);
             
+        } catch (AuthenticationException e) {
+            log.error("Authentication failed: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
-            log.error("Authentication failed for {}: {}", loginRequest.getEmailOrUsername(), e.getMessage(), e);
-            throw new AuthenticationException("Invalid credentials");
+            log.error("Unexpected error during authentication: {}", e.getMessage(), e);
+            throw new AuthenticationException("Authentication failed");
         }
     }
 

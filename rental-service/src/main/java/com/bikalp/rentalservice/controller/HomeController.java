@@ -30,7 +30,7 @@ public class HomeController {
         model.addAttribute("featuredRooms", featuredRooms);
 
         // Get recent rooms
-        List<Room> recentRooms = roomService.getRecentRooms();
+        List<Room> recentRooms = roomService.getRecentRooms(5);
         model.addAttribute("recentRooms", recentRooms);
 
         // Get available rooms (first page)
@@ -82,24 +82,30 @@ public class HomeController {
 
     @GetMapping("/room/{id}")
     public String roomDetails(@PathVariable Long id, Model model) {
-        roomService.getRoomById(id).ifPresent(room -> {
+        try {
+            Room room = roomService.getRoomById(id);
             model.addAttribute("room", room);
             model.addAttribute("relatedRooms", roomService.getRoomsByType(
                 room.getRoomType(),
                 PageRequest.of(0, 4, Sort.by("createdAt").descending())
             ));
             model.addAttribute("imageUtil", new ImageUtil());
-        });
-        return "room-details";
+            return "room-details";
+        } catch (Exception e) {
+            return "redirect:/";
+        }
     }
 
     public static class ImageUtil {
         public String getImageUrl(Room room) {
             if (room != null && room.getRoomImages() != null && !room.getRoomImages().isEmpty()) {
-                RoomImage image = room.getRoomImages().get(0);
-                if (image != null && image.getData() != null) {
-                    return "data:" + image.getContentType() + ";base64," + 
-                           Base64.getEncoder().encodeToString(image.getData());
+                RoomImage image = room.getRoomImages().stream()
+                        .filter(RoomImage::isPrimary)
+                        .findFirst()
+                        .orElse(room.getRoomImages().get(0));
+                
+                if (image != null && image.getImageData() != null) {
+                    return "data:image/jpeg;base64," + image.getImageData();
                 }
             }
             return "/images/default-room.jpg";

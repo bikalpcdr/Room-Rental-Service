@@ -112,4 +112,38 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
      */
     @Query("SELECT b FROM Booking b ORDER BY b.bookingDate DESC")
     List<Booking> findRecentBookings(Pageable pageable);
+
+    /**
+     * Count bookings by landlord ID and status
+     * @param landlordId the landlord ID
+     * @param status the booking status
+     * @return count of bookings
+     */
+    @Query("SELECT COUNT(b) FROM Booking b JOIN b.room r WHERE r.landlord.id = :landlordId AND b.status = :status")
+    long countByLandlordIdAndStatus(@Param("landlordId") Long landlordId, @Param("status") BookingStatus status);
+
+    /**
+     * Sum total amount of bookings by landlord ID
+     * @param landlordId the landlord ID
+     * @return sum of total amounts
+     */
+    @Query("SELECT COALESCE(SUM(b.totalPrice), 0) FROM Booking b JOIN b.room r WHERE r.landlord.id = :landlordId")
+    BigDecimal sumTotalAmountByLandlordId(@Param("landlordId") Long landlordId);
+
+    /**
+     * Find bookings by landlord ID ordered by creation date
+     * @param landlordId the landlord ID
+     * @param pageable pagination information
+     * @return page of bookings
+     */
+    @Query("SELECT b FROM Booking b JOIN b.room r WHERE r.landlord.id = :landlordId ORDER BY b.bookingDate DESC")
+    Page<Booking> findByLandlordIdOrderByCreatedAtDesc(@Param("landlordId") Long landlordId, Pageable pageable);
+
+    /**
+     * Find all bookings by landlord ID
+     * @param landlordId the landlord ID
+     * @return list of bookings
+     */
+    @Query("SELECT b FROM Booking b JOIN b.room r WHERE r.landlord.id = :landlordId")
+    List<Booking> findByLandlordId(@Param("landlordId") Long landlordId);
 }

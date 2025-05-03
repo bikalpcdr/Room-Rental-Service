@@ -168,7 +168,6 @@ public class AuthController implements AuthenticationSuccessHandler {
             } else {
                 redirectUrl = "/user/dashboard";
             }
-            
             response.sendRedirect(redirectUrl);
         } else {
             response.sendRedirect("/login?error");

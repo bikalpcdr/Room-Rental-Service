@@ -61,4 +61,37 @@ public interface BookingService {
      * @return list of recent bookings
      */
     List<Booking> getRecentBookingsByUser(Long userId, int limit);
+
+    /**
+     * Get the count of active bookings for a specific landlord
+     *
+     * @param landlordId the landlord ID
+     * @return number of active bookings
+     */
+    long getActiveBookingsCountByLandlord(Long landlordId);
+
+    /**
+     * Get the total revenue for a specific landlord
+     *
+     * @param landlordId the landlord ID
+     * @return total revenue
+     */
+    BigDecimal getTotalRevenueByLandlord(Long landlordId);
+
+    /**
+     * Get recent bookings for a specific landlord
+     *
+     * @param landlordId the landlord ID
+     * @param limit number of bookings to return
+     * @return list of recent bookings
+     */
+    List<Booking> getRecentBookingsByLandlord(Long landlordId, int limit);
+
+    /**
+     * Get all bookings for a specific landlord
+     *
+     * @param landlordId the landlord ID
+     * @return list of bookings
+     */
+    List<Booking> getBookingsByLandlord(Long landlordId);
 } 

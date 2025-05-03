@@ -99,11 +99,11 @@ public class SecurityConfig {
                     super.onLogoutSuccess(request, response, authentication);
                 } catch (ServletException e) {
                     log.error("Error during logout: {}", e.getMessage());
-                    response.sendRedirect("/auth/login?error=true");
+                    response.sendRedirect("/");
                 }
             }
         };
-        handler.setDefaultTargetUrl("/auth/login?logout=true");
+        handler.setDefaultTargetUrl("/");
         return handler;
     }
 
@@ -115,6 +115,8 @@ public class SecurityConfig {
                                               jakarta.servlet.http.HttpServletResponse response, 
                                               org.springframework.security.core.Authentication authentication) {
                 log.info("Determining target URL for user: {}", authentication.getName());
+                log.info("User authorities: {}", authentication.getAuthorities());
+                
                 if (authentication.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"))) {
                     log.info("Redirecting super admin to dashboard");
@@ -135,11 +137,12 @@ public class SecurityConfig {
                     log.info("Redirecting customer to dashboard");
                     return "/customer/dashboard";
                 }
-                log.info("Redirecting to home page");
+                log.warn("No matching role found for user: {}", authentication.getName());
                 return "/";
             }
         };
         handler.setUseReferer(false);
+        handler.setAlwaysUseDefaultTargetUrl(false);
         return handler;
     }
 

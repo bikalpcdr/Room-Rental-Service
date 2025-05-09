@@ -10,53 +10,60 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public interface RoomService {
-    // Basic CRUD operations
-    void saveRoom(Room room);
-    void updateRoom(Long id, Room room);
     void deleteRoom(Long id);
+
     Room getRoomById(Long id);
 
     // Landlord-specific operations
     List<Room> getRoomsByLandlord(Long landlordId);
+
     long getTotalRoomsByLandlord(Long landlordId);
+
     long getAvailableRoomsByLandlord(Long landlordId);
+
     List<Room> getRecentRoomsByLandlord(Long landlordId, int limit);
 
-    // General room operations
-    List<Room> getAllRooms();
-    List<Room> getAvailableRooms();
-    List<Room> getRoomsByType(String roomType);
-    List<Room> getRoomsByPriceRange(BigDecimal minPrice, BigDecimal maxPrice);
-    List<Room> searchRooms(String keyword);
     List<Room> getFeaturedRooms();
-    List<Room> getRecentRooms(int limit);
+
+    List<Room> getRecentRooms();
 
     Page<Room> getRoomsByType(RoomType roomType, Pageable pageable);
+
     Page<Room> getAvailableRooms(Pageable pageable);
+
     Page<Room> searchRooms(String keyword, RoomType roomType, Double minPrice, Double maxPrice, Pageable pageable);
+
     long getTotalRooms();
 
     /**
      * Get all available room types
+     *
      * @return List of all room types
      */
     List<RoomType> getAllRoomTypes();
 
     /**
      * Save room with multiple images
-     * @param room The room to save
+     *
+     * @param room   The room to save
      * @param images List of image files
      */
     void saveRoomWithImages(Room room, List<MultipartFile> images);
 
     /**
      * Update room with multiple images
-     * @param id Room ID
-     * @param room The room to update
-     * @param images List of image files
+     *
+     * @param id              Room ID
+     * @param room            The room to update
+     * @param images          List of image files
      * @param removedImageIds List of image IDs to remove
      */
     void updateRoomWithImages(Long id, Room room, List<MultipartFile> images, List<Long> removedImageIds);
 
-    void removeImages(List<Long> imageIds);
+    /**
+     * Toggle the availability status of a room
+     *
+     * @param id Room ID
+     */
+    void toggleRoomAvailability(Long id);
 } 

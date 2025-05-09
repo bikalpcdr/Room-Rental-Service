@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.Base64;
 import java.util.List;
 
 @Controller
@@ -30,7 +29,7 @@ public class HomeController {
         model.addAttribute("featuredRooms", featuredRooms);
 
         // Get recent rooms
-        List<Room> recentRooms = roomService.getRecentRooms(5);
+        List<Room> recentRooms = roomService.getRecentRooms();
         model.addAttribute("recentRooms", recentRooms);
 
         // Get available rooms (first page)

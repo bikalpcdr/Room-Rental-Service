@@ -32,21 +32,6 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     @Transactional
-    public void saveRoom(Room room) {
-        roomRepo.save(room);
-    }
-
-    @Override
-    @Transactional
-    public void updateRoom(Long id, Room room) {
-        Room existingRoom = getRoomById(id);
-        room.setId(id);
-        room.setLandlord(existingRoom.getLandlord());
-        roomRepo.save(room);
-    }
-
-    @Override
-    @Transactional
     public void deleteRoom(Long id) {
         roomRepo.deleteById(id);
     }
@@ -83,39 +68,13 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public List<Room> getAllRooms() {
-        return roomRepo.findAll();
-    }
-
-    @Override
-    public List<Room> getAvailableRooms() {
-        return roomRepo.findByAvailableTrue();
-    }
-
-    @Override
-    public List<Room> getRoomsByType(String roomType) {
-        return roomRepo.findByRoomType(RoomType.valueOf(roomType));
-    }
-
-    @Override
-    public List<Room> getRoomsByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
-        return roomRepo.searchRooms(null, null, minPrice.doubleValue(), maxPrice.doubleValue(), Pageable.unpaged())
-                .getContent();
-    }
-
-    @Override
-    public List<Room> searchRooms(String keyword) {
-        return roomRepo.searchRooms(keyword);
-    }
-
-    @Override
     public List<Room> getFeaturedRooms() {
-        return roomRepo.findTop5ByOrderByCreatedAtDesc();
+        return roomRepo.getFeaturedRooms();
     }
 
     @Override
-    public List<Room> getRecentRooms(int limit) {
-        return roomRepo.findTop10ByOrderByCreatedAtDesc();
+    public List<Room> getRecentRooms() {
+        return roomRepo.getRecentRooms();
     }
 
     @Override
@@ -244,31 +203,11 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     @Transactional
-    public void removeImages(List<Long> imageIds) {
-        log.info("Removing images with IDs: {}", imageIds);
-        for (Long imageId : imageIds) {
-            try {
-                RoomImage image = roomImageRepository.findById(imageId)
-                    .orElseThrow(() -> new RuntimeException("Image not found with id: " + imageId));
-                
-                // Get the room and remove the image from its list
-                Room room = image.getRoom();
-                if (room != null) {
-                    List<RoomImage> roomImages = room.getRoomImages();
-                    if (roomImages != null) {
-                        roomImages.removeIf(img -> img.getId().equals(imageId));
-                        room.setRoomImages(roomImages);
-                        roomRepo.save(room);
-                    }
-                }
-                
-                // Delete the image
-                roomImageRepository.deleteById(imageId);
-                log.info("Removed image with ID: {}", imageId);
-            } catch (Exception e) {
-                log.error("Error removing image with ID {}: {}", imageId, e.getMessage());
-                throw new RuntimeException("Error removing image: " + e.getMessage());
-            }
-        }
+    public void toggleRoomAvailability(Long id) {
+        log.info("Toggling availability for room ID: {}", id);
+        Room room = getRoomById(id);
+        room.setAvailable(!room.isAvailable());
+        roomRepo.save(room);
+        log.info("Successfully toggled availability for room ID: {} to {}", id, room.isAvailable());
     }
 } 

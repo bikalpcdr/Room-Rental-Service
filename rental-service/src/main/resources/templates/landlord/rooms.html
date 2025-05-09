@@ -96,6 +96,16 @@
                     </div>
                 </div>
 
+                <!-- Alert Messages -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
                 <!-- Rooms Table -->
                 <div class="card">
                     <div class="card-body">
@@ -122,10 +132,15 @@
                                         <td th:text="${room.numberOfRooms}">0</td>
                                         <td th:text="${room.capacity}">0</td>
                                         <td>
-                                            <span class="badge" th:classappend="${room.available ? 'bg-success' : 'bg-danger'}"
-                                                  th:text="${room.available ? 'Available' : 'Unavailable'}">
-                                                Status
-                                            </span>
+                                            <form th:action="@{/api/rooms/{id}/toggle(id=${room.id})}" method="post" class="d-inline">
+                                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           th:checked="${room.available}"
+                                                           onchange="this.form.submit()">
+                                                    <label class="form-check-label" th:text="${room.available ? 'Available' : 'Not Available'}"></label>
+                                                </div>
+                                            </form>
                                         </td>
                                         <td>
                                             <div class="btn-group">

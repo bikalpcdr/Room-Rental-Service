@@ -21,8 +21,6 @@ public interface RoomRepo extends JpaRepository<Room, Long> {
 
     Page<Room> findByAvailableTrue(Pageable pageable);
 
-    Page<Room> findByLandlordId(Long landlordId, Pageable pageable);
-
     @Query("SELECT r FROM Room r WHERE " +
            "(:keyword IS NULL OR LOWER(r.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(r.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
@@ -38,37 +36,13 @@ public interface RoomRepo extends JpaRepository<Room, Long> {
             Pageable pageable
     );
 
-    @Query("SELECT r FROM Room r WHERE " +
-           "(:roomType IS NULL OR r.roomType = :roomType) AND " +
-           "(:minPrice IS NULL OR r.pricePerMonth >= :minPrice) AND " +
-           "(:maxPrice IS NULL OR r.pricePerMonth <= :maxPrice) AND " +
-           "r.available = true")
-    Page<Room> findByFilters(
-            @Param("roomType") RoomType roomType,
-            @Param("minPrice") Double minPrice,
-            @Param("maxPrice") Double maxPrice,
-            Pageable pageable);
+    // for features rooms
+    @Query(value = "select * from rooms where available = true order by created_at desc limit 6", nativeQuery = true)
+    List<Room> getFeaturedRooms();
 
-    List<Room> findTop5ByOrderByCreatedAtDesc();
+    // for recently added rooms
+    @Query(value = "select * from rooms where available = true order by created_at desc LIMIT 8", nativeQuery = true)
+    List<Room> getRecentRooms();
 
-    List<Room> findTop10ByOrderByCreatedAtDesc();
-
-    List<Room> findByRoomType(RoomType roomType);
     List<Room> findByLandlordId(Long landlordId);
-    List<Room> findByAvailableTrue();
-    
-    @Query("SELECT r FROM Room r WHERE r.available = true AND r.roomType = :roomType")
-    List<Room> findAvailableRoomsByType(@Param("roomType") RoomType roomType);
-    
-    @Query("SELECT COUNT(r) FROM Room r WHERE r.available = true")
-    long countAvailableRooms();
-    
-    @Query("SELECT COUNT(r) FROM Room r WHERE r.roomType = :roomType")
-    long countRoomsByType(@Param("roomType") RoomType roomType);
-    
-    @Query("SELECT r FROM Room r ORDER BY r.createdAt DESC")
-    List<Room> findRecentRooms(Pageable pageable);
-    
-    @Query("SELECT r FROM Room r WHERE r.title LIKE %:keyword% OR r.description LIKE %:keyword%")
-    List<Room> searchRooms(@Param("keyword") String keyword);
 }

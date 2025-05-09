@@ -43,7 +43,7 @@ public class Room {
 
     private String address;
 
-    private double numberOfRooms;
+    private int numberOfRooms;
 
     private int capacity; // number of people
 

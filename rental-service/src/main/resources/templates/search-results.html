@@ -33,11 +33,17 @@
             padding: 5px 10px;
             border-radius: 5px;
         }
+        .sort-dropdown {
+            min-width: 200px;
+        }
         .pagination {
             margin-top: 30px;
         }
-        .sort-dropdown {
-            margin-bottom: 20px;
+        .no-results {
+            text-align: center;
+            padding: 50px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -58,10 +64,10 @@
                         <a class="nav-link active" href="/search">Browse Rooms</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/login">Login</a>
+                        <a class="nav-link" href="/auth/login">Login</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/register">Register</a>
+                        <a class="nav-link" href="/auth/register">Register</a>
                     </li>
                 </ul>
             </div>
@@ -84,81 +90,79 @@
                             <option value="">All Types</option>
                             <option th:each="type : ${roomTypes}" 
                                     th:value="${type}" 
-                                    th:text="${type}"
+                                    th:text="${#strings.replace(type.name(), '_', ' ')}"
                                     th:selected="${roomType == type}">
                             </option>
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <input type="number" name="minPrice" class="form-control" placeholder="Min Price" th:value="${minPrice}">
+                        <input type="number" name="minPrice" class="form-control" placeholder="Min Price (₨)" th:value="${minPrice}">
                     </div>
                     <div class="col-md-2">
-                        <input type="number" name="maxPrice" class="form-control" placeholder="Max Price" th:value="${maxPrice}">
+                        <input type="number" name="maxPrice" class="form-control" placeholder="Max Price (₨)" th:value="${maxPrice}">
                     </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Sort Options -->
-            <div class="sort-dropdown">
-                <form action="/search" method="get" class="row g-3">
-                    <input type="hidden" name="keyword" th:value="${keyword}">
-                    <input type="hidden" name="roomType" th:value="${roomType}">
-                    <input type="hidden" name="minPrice" th:value="${minPrice}">
-                    <input type="hidden" name="maxPrice" th:value="${maxPrice}">
-                    <div class="col-md-3">
-                        <select name="sortBy" class="form-select" onchange="this.form.submit()">
-                            <option value="createdAt" th:selected="${sortBy == 'createdAt'}">Date Added</option>
-                            <option value="price" th:selected="${sortBy == 'price'}">Price</option>
-                            <option value="title" th:selected="${sortBy == 'title'}">Title</option>
+                    <div class="col-md-2">
+                        <select name="sortBy" class="form-select sort-dropdown">
+                            <option value="createdAt" th:selected="${sortBy == 'createdAt'}">Newest First</option>
+                            <option value="pricePerMonth" th:selected="${sortBy == 'pricePerMonth'}">Price: Low to High</option>
+                            <option value="pricePerMonth,desc" th:selected="${sortBy == 'pricePerMonth,desc'}">Price: High to Low</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
-                        <select name="direction" class="form-select" onchange="this.form.submit()">
-                            <option value="desc" th:selected="${direction == 'desc'}">Descending</option>
-                            <option value="asc" th:selected="${direction == 'asc'}">Ascending</option>
-                        </select>
+                    <div class="col-md-1">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i>
+                        </button>
                     </div>
                 </form>
             </div>
 
             <!-- Results Count -->
-            <p class="text-muted mb-4" th:text="'Found ' + ${searchResults.totalElements} + ' rooms'"></p>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <p class="mb-0" th:text="${searchResults.totalElements + ' rooms found'}">0 rooms found</p>
+            </div>
 
             <!-- Room Cards -->
-            <div class="row">
-                <div class="col-md-4" th:each="room : ${searchResults.content}">
-                    <div class="card room-card">
-                        <img th:src="${room.images[0]?.imageUrl}" class="card-img-top room-image" alt="Room Image">
-                        <div class="price-tag">$<span th:text="${room.price}"></span>/month</div>
-                        <div class="card-body">
-                            <h5 class="card-title" th:text="${room.title}"></h5>
-                            <p class="card-text" th:text="${room.description}"></p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-primary" th:text="${room.roomType}"></span>
-                                <a th:href="@{/room/{id}(id=${room.id})}" class="btn btn-primary">View Details</a>
+            <div th:if="${searchResults.totalElements > 0}">
+                <div class="row">
+                    <div class="col-md-4" th:each="room : ${searchResults.content}">
+                        <div class="card room-card">
+                            <img th:src="${imageUtil.getImageUrl(room)}" class="card-img-top room-image" alt="Room Image">
+                            <div class="price-tag">₨<span th:text="${room.pricePerMonth}"></span>/month</div>
+                            <div class="card-body">
+                                <h5 class="card-title" th:text="${room.title}"></h5>
+                                <p class="card-text" th:text="${room.description}"></p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-primary" th:text="${#strings.replace(room.roomType.name(), '_', ' ')}"></span>
+                                    <a th:href="@{/room/{id}(id=${room.id})}" class="btn btn-primary">View Details</a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Pagination -->
+                <nav th:if="${searchResults.totalPages > 1}" aria-label="Search results pages">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                            <a class="page-link" th:href="@{/search(page=${currentPage - 1}, size=8, keyword=${keyword}, roomType=${roomType}, minPrice=${minPrice}, maxPrice=${maxPrice}, sortBy=${sortBy})}">Previous</a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, searchResults.totalPages - 1)}"
+                            th:classappend="${currentPage == i} ? 'active'">
+                            <a class="page-link" th:href="@{/search(page=${i}, size=8, keyword=${keyword}, roomType=${roomType}, minPrice=${minPrice}, maxPrice=${maxPrice}, sortBy=${sortBy})}" th:text="${i + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == searchResults.totalPages - 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/search(page=${currentPage + 1}, size=8, keyword=${keyword}, roomType=${roomType}, minPrice=${minPrice}, maxPrice=${maxPrice}, sortBy=${sortBy})}">Next</a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
 
-            <!-- Pagination -->
-            <nav aria-label="Page navigation" class="d-flex justify-content-center">
-                <ul class="pagination">
-                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-                        <a class="page-link" th:href="@{/search(keyword=${keyword},roomType=${roomType},minPrice=${minPrice},maxPrice=${maxPrice},page=${currentPage-1},sortBy=${sortBy},direction=${direction})}">Previous</a>
-                    </li>
-                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages-1)}" th:classappend="${i == currentPage} ? 'active'">
-                        <a class="page-link" th:href="@{/search(keyword=${keyword},roomType=${roomType},minPrice=${minPrice},maxPrice=${maxPrice},page=${i},sortBy=${sortBy},direction=${direction})}" th:text="${i+1}"></a>
-                    </li>
-                    <li class="page-item" th:classappend="${currentPage == totalPages-1} ? 'disabled'">
-                        <a class="page-link" th:href="@{/search(keyword=${keyword},roomType=${roomType},minPrice=${minPrice},maxPrice=${maxPrice},page=${currentPage+1},sortBy=${sortBy},direction=${direction})}">Next</a>
-                    </li>
-                </ul>
-            </nav>
+            <!-- No Results -->
+            <div th:if="${searchResults.totalElements == 0}" class="no-results">
+                <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+                <h3>No rooms found</h3>
+                <p class="text-muted">Try adjusting your search criteria</p>
+            </div>
         </div>
     </section>
 
@@ -181,9 +185,9 @@
                 <div class="col-md-4">
                     <h5>Contact Info</h5>
                     <ul class="list-unstyled">
-                        <li><i class="fas fa-phone"></i> +1 234 567 890</li>
-                        <li><i class="fas fa-envelope"></i> info@rentalservice.com</li>
-                        <li><i class="fas fa-map-marker-alt"></i> 123 Main St, City, Country</li>
+                        <li><i class="fas fa-phone"></i> 9863261000</li>
+                        <li><i class="fas fa-envelope"></i> bikalpcdr42@gmail.com</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Kathmandu,kirtipur,Nepal</li>
                     </ul>
                 </div>
             </div>

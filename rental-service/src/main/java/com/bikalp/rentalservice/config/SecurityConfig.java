@@ -52,7 +52,10 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> {
                 log.info("Configuring authorization rules...");
                 auth
-                    .requestMatchers("/", "/auth/**", "/css/**", "/js/**", "/images/**").permitAll()
+                    .requestMatchers("/", "/auth/**", "/css/**", "/js/**", "/images/**", 
+                                   "/search", "/room/**", "/api/rooms/**", "/api/search/**",
+                                   "/home", "/home/**", "/static/**", "/webjars/**",
+                                   "/favicon.ico", "/error","about","contact","browse-rooms").permitAll()
                     .requestMatchers("/superadmin/**").hasAuthority("ROLE_SUPER_ADMIN")
                     .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                     .requestMatchers("/landlord/**").hasAuthority("ROLE_LANDLORD")

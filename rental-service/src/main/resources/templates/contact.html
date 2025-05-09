@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Rental Service</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .contact-section {
+            padding: 60px 0;
+        }
+        .contact-info {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        .contact-info h5 {
+            margin-bottom: 20px;
+        }
+        .contact-info i {
+            color: #0d47a1;
+            margin-right: 10px;
+        }
+        .contact-form {
+            background-color: #e3f2fd;
+            border-radius: 10px;
+            padding: 30px;
+        }
+        .map-section {
+            margin-top: 40px;
+        }
+        .map-placeholder {
+            width: 100%;
+            height: 300px;
+            background: #cfd8dc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #607d8b;
+            font-size: 1.5rem;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Rental Service</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/search">Browse Rooms</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/contact">Contact</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/login">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/register">Register</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contact Section -->
+    <section class="contact-section">
+        <div class="container">
+            <div class="row">
+                <!-- Contact Info -->
+                <div class="col-md-5">
+                    <div class="contact-info mb-4 mb-md-0">
+                        <h5>Contact Information</h5>
+                        <p><i class="fas fa-phone"></i> 9863261000</p>
+                        <p><i class="fas fa-envelope"></i> bikalpcdr42@gmail.com</p>
+                        <p><i class="fas fa-map-marker-alt"></i> Kathmandu, Kirtipur, Nepal</p>
+                        <hr>
+                        <h5>Business Hours</h5>
+                        <p>Sunday - Friday: 9:00 AM to 6:00 PM</p>
+                        <p>Saturday: Closed</p>
+                    </div>
+                </div>
+                <!-- Contact Form -->
+                <div class="col-md-7">
+                    <div class="contact-form">
+                        <h4 class="mb-4">Send Us a Message</h4>
+                        <form action="#" method="post">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Your Name</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Your Email</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="subject" class="form-label">Subject</label>
+                                <input type="text" class="form-control" id="subject" name="subject" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="message" class="form-label">Message</label>
+                                <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- Map Section (Optional) -->
+            <div class="row map-section">
+                <div class="col-12">
+                    <div class="map-placeholder">
+                        <i class="fas fa-map-marker-alt me-2"></i> Map will be displayed here
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>About Us</h5>
+                    <p>Find your perfect rental space with our comprehensive listing service.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/" class="text-white">Home</a></li>
+                        <li><a href="/search" class="text-white">Browse Rooms</a></li>
+                        <li><a href="/contact" class="text-white">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Contact Info</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-phone"></i> 9863261000</li>
+                        <li><i class="fas fa-envelope"></i> bikalpcdr42@gmail.com</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Kathmandu, Kirtipur, Nepal</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

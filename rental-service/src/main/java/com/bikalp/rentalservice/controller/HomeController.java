@@ -96,6 +96,25 @@ public class HomeController {
         }
     }
 
+    @GetMapping("/about")
+    public String about() {
+        return "about";
+    }
+
+    @GetMapping("/contact")
+    public String contact() {
+        return "contact";
+    }
+
+    @GetMapping("/browse-rooms")
+    public String browseRooms(Model model) {
+        Page<Room> rooms = roomService.getAvailableRooms(PageRequest.of(0, 8, Sort.by("createdAt").descending()));
+        model.addAttribute("rooms", rooms);
+        model.addAttribute("roomTypes", RoomType.values());
+        model.addAttribute("imageUtil", new ImageUtil());
+        return "browse-rooms";
+    }
+
     public static class ImageUtil {
         public String getImageUrl(Room room) {
             if (room != null && room.getRoomImages() != null && !room.getRoomImages().isEmpty()) {

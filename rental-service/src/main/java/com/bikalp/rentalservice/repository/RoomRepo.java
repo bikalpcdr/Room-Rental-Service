@@ -44,6 +44,6 @@ public interface RoomRepo extends JpaRepository<Room, Long> {
     @Query(value = "select * from rooms where available = true order by created_at desc LIMIT 8", nativeQuery = true)
     List<Room> getRecentRooms();
 
-    @Query(value = "select * from rooms where landlord_id = ?landlordId", nativeQuery = true)
+    @Query(value = "select * from rooms where landlord_id = :landlordId", nativeQuery = true)
     List<Room> findByLandlordId(Long landlordId);
 }

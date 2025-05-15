@@ -27,7 +27,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<Booking> getRecentBookings(int limit) {
         return bookingRepo.findRecentBookings(
-            PageRequest.of(0, limit)
+                PageRequest.of(0, limit)
         );
     }
 
@@ -69,8 +69,8 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<Booking> getRecentBookingsByUser(Long userId, int limit) {
         return bookingRepo.findByUserIdOrderByCreatedAtDesc(
-            userId,
-            PageRequest.of(0, limit)
+                userId,
+                PageRequest.of(0, limit)
         ).getContent();
     }
 
@@ -87,8 +87,8 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<Booking> getRecentBookingsByLandlord(Long landlordId, int limit) {
         return bookingRepo.findByLandlordIdOrderByCreatedAtDesc(
-            landlordId,
-            PageRequest.of(0, limit)
+                landlordId,
+                PageRequest.of(0, limit)
         ).getContent();
     }
 

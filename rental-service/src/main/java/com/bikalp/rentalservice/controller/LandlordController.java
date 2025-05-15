@@ -8,8 +8,7 @@ import com.bikalp.rentalservice.service.BookingService;
 import com.bikalp.rentalservice.service.RoomService;
 import com.bikalp.rentalservice.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,13 +20,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.math.BigDecimal;
 import java.util.List;
 
+@Slf4j
 @Controller
 @RequestMapping("/landlord")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('LANDLORD')")
 public class LandlordController {
 
-    private static final Logger log = LoggerFactory.getLogger(LandlordController.class);
 
     private final UserService userService;
     private final RoomService roomService;
@@ -40,10 +39,10 @@ public class LandlordController {
             log.error("User not authenticated");
             throw new RuntimeException("User not authenticated. Please log in.");
         }
-        
+
         String username = authentication.getName();
         log.info("Looking for user with username: {}", username);
-        
+
         User user = userService.findByUsername(username)
                 .orElseGet(() -> {
                     log.warn("User not found with username: {}, trying email", username);
@@ -53,7 +52,7 @@ public class LandlordController {
                                 return new RuntimeException("User not found. Please try logging in again.");
                             });
                 });
-        
+
         log.info("Found user: {} with role: {}", user.getUsername(), user.getRole());
         return user;
     }
@@ -69,7 +68,7 @@ public class LandlordController {
             long totalRooms = roomService.getTotalRoomsByLandlord(landlord.getId());
             long availableRooms = roomService.getAvailableRoomsByLandlord(landlord.getId());
             log.info("Room statistics - Total: {}, Available: {}", totalRooms, availableRooms);
-            
+
             // Get booking statistics
             long activeBookings = bookingService.getActiveBookingsCountByLandlord(landlord.getId());
             BigDecimal totalRevenue = bookingService.getTotalRevenueByLandlord(landlord.getId());
@@ -124,32 +123,32 @@ public class LandlordController {
     }
 
     @PostMapping("/rooms/create")
-    public String createRoom(@ModelAttribute Room room, 
-                            @RequestParam("images") List<MultipartFile> images,
-                            Model model) {
+    public String createRoom(@ModelAttribute Room room,
+                             @RequestParam("images") List<MultipartFile> images,
+                             Model model) {
         try {
             log.info("Starting room creation process");
             User currentUser = getCurrentUser();
             log.info("Setting landlord: {}", currentUser.getUsername());
             room.setLandlord(currentUser);
-            
-            log.info("Room details - Title: {}, Type: {}, Price: {}", 
+
+            log.info("Room details - Title: {}, Type: {}, Price: {}",
                     room.getTitle(), room.getRoomType(), room.getPricePerMonth());
-            
+
             if (images != null) {
                 log.info("Received {} images", images.size());
                 for (MultipartFile image : images) {
-                    log.info("Image details - Name: {}, Size: {} bytes, Content Type: {}", 
-                            image.getOriginalFilename(), 
-                            image.getSize(), 
+                    log.info("Image details - Name: {}, Size: {} bytes, Content Type: {}",
+                            image.getOriginalFilename(),
+                            image.getSize(),
                             image.getContentType());
                 }
             } else {
                 log.warn("No images received in the request");
             }
-            
+
             roomService.saveRoomWithImages(room, images);
-            
+
             log.info("Room created successfully with ID: {}", room.getId());
             return "redirect:/landlord/rooms";
         } catch (Exception e) {
@@ -177,11 +176,11 @@ public class LandlordController {
     }
 
     @PostMapping("/rooms/{id}/edit")
-    public String updateRoom(@PathVariable Long id, 
-                           @ModelAttribute Room room,
-                           @RequestParam(value = "images", required = false) List<MultipartFile> images,
-                           @RequestParam(value = "removedImages", required = false) List<Long> removedImageIds,
-                           Model model) {
+    public String updateRoom(@PathVariable Long id,
+                             @ModelAttribute Room room,
+                             @RequestParam(value = "images", required = false) List<MultipartFile> images,
+                             @RequestParam(value = "removedImages", required = false) List<Long> removedImageIds,
+                             Model model) {
         try {
             User currentUser = getCurrentUser();
             if (currentUser == null) {

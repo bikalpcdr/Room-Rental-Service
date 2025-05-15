@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SuperAdmin Dashboard</title>
+    <title>User Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -35,37 +35,6 @@
             font-size: 2rem;
             margin-bottom: 10px;
         }
-        .user-profile {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,.1);
-        }
-        .user-profile .dropdown-toggle {
-            color: #fff;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .user-profile .dropdown-toggle:hover {
-            color: #fff;
-        }
-        .user-profile .dropdown-menu {
-            background-color: #343a40;
-            border: none;
-        }
-        .user-profile .dropdown-item {
-            color: rgba(255,255,255,.75);
-        }
-        .user-profile .dropdown-item:hover {
-            color: #fff;
-            background-color: rgba(255,255,255,.1);
-        }
-        .user-profile .dropdown-divider {
-            border-color: rgba(255,255,255,.1);
-        }
-        .user-profile .text-danger {
-            color: #ff6b6b !important;
-        }
     </style>
 </head>
 <body>
@@ -75,23 +44,22 @@
         <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
             <div class="position-sticky pt-3">
                 <!-- User Profile -->
-                <div class="user-profile">
+                <div class="user-profile p-3 border-bottom">
                     <div class="dropdown">
-                        <a class="dropdown-toggle" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-user-circle"></i>
-                            <span th:text="${#authentication.principal.username}">SuperAdmin</span>
+                        <a class="dropdown-toggle text-white text-decoration-none d-flex align-items-center" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-2"></i>
+                            <span th:text="${user.fullName}">User</span>
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="#" th:href="@{/superadmin/profile}">
+                            <li><a class="dropdown-item" href="#" th:href="@{/user/profile}">
                                 <i class="fas fa-user me-2"></i>Profile
                             </a></li>
-                            <li><a class="dropdown-item" href="#" th:href="@{/superadmin/settings}">
+                            <li><a class="dropdown-item" href="#" th:href="@{/user/settings}">
                                 <i class="fas fa-cog me-2"></i>Settings
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form th:action="@{/auth/logout}" method="post">
-                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                     <button type="submit" class="dropdown-item text-danger">
                                         <i class="fas fa-sign-out-alt me-2"></i>Logout
                                     </button>
@@ -104,32 +72,22 @@
                 <!-- Navigation Menu -->
                 <ul class="nav flex-column mt-3">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#" th:href="@{/superadmin/dashboard}">
+                        <a class="nav-link active" href="#" th:href="@{/user/dashboard}">
                             <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" th:href="@{/superadmin/users}">
-                            <i class="fas fa-users me-2"></i>Users Management
+                        <a class="nav-link" href="#" th:href="@{/user/bookings}">
+                            <i class="fas fa-calendar-check me-2"></i>My Bookings
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" th:href="@{/superadmin/rooms}">
-                            <i class="fas fa-building me-2"></i>Rooms Management
+                        <a class="nav-link" href="#" th:href="@{/browse-rooms}">
+                            <i class="fas fa-search me-2"></i>Browse Rooms
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" th:href="@{/superadmin/bookings}">
-                            <i class="fas fa-calendar-check me-2"></i>Bookings
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" th:href="@{/superadmin/payments}">
-                            <i class="fas fa-money-bill-wave me-2"></i>Payments
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" th:href="@{/superadmin/settings}">
+                        <a class="nav-link" href="#" th:href="@{/user/settings}">
                             <i class="fas fa-cog me-2"></i>Settings
                         </a>
                     </li>
@@ -140,120 +98,64 @@
         <!-- Main Content -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Dashboard Overview</h1>
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    <div class="btn-group me-2">
-                        <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
-                    </div>
-                </div>
+                <h1 class="h2">My Dashboard</h1>
             </div>
 
             <!-- Statistics Cards -->
             <div class="row">
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="stat-card bg-primary text-white">
-                        <i class="fas fa-users"></i>
-                        <h3 th:text="${totalUsers}">0</h3>
-                        <p>Total Users</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card bg-success text-white">
-                        <i class="fas fa-building"></i>
-                        <h3 th:text="${totalRooms}">0</h3>
-                        <p>Total Rooms</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card bg-info text-white">
                         <i class="fas fa-calendar-check"></i>
+                        <h3 th:text="${activeBookings}">0</h3>
+                        <p>Active Bookings</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card bg-success text-white">
+                        <i class="fas fa-history"></i>
                         <h3 th:text="${totalBookings}">0</h3>
                         <p>Total Bookings</p>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="stat-card bg-warning text-white">
+                <div class="col-md-4">
+                    <div class="stat-card bg-info text-white">
                         <i class="fas fa-money-bill-wave"></i>
-                        <h3 th:text="${totalRevenue}">0</h3>
-                        <p>Total Revenue</p>
+                        <h3 th:text="${totalSpent}">$0</h3>
+                        <p>Total Spent</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Recent Activities -->
-            <div class="row mt-4">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Recent Bookings</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table">
-                                    <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Customer</th>
-                                        <th>Room</th>
-                                        <th>Status</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr th:each="booking : ${recentBookings}">
-                                        <td th:text="${booking.id}">1</td>
-                                        <td th:text="${booking.customer.fullName}">John Doe</td>
-                                        <td th:text="${booking.room.title}">Room Title</td>
-                                        <td>
-                                                    <span class="badge" th:classappend="${booking.status == 'PENDING' ? 'bg-warning' :
-                                                                                        (booking.status == 'CONFIRMED' ? 'bg-success' :
-                                                                                        (booking.status == 'CANCELLED' ? 'bg-danger' : 'bg-info'))}">
-                                                        <span th:text="${booking.status}">Status</span>
-                                                    </span>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Recent Bookings -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Bookings</h5>
                 </div>
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Recent Users</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table">
-                                    <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Username</th>
-                                        <th>Role</th>
-                                        <th>Status</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr th:each="user : ${recentUsers}">
-                                        <td th:text="${user.id}">1</td>
-                                        <td th:text="${user.username}">username</td>
-                                        <td>
-                                                    <span class="badge" th:classappend="${user.role == 'SUPER_ADMIN' ? 'bg-danger' :
-                                                                                        (user.role == 'ADMIN' ? 'bg-warning' :
-                                                                                        (user.role == 'LANDLORD' ? 'bg-info' : 'bg-success'))}">
-                                                        <span th:text="${user.role}">Role</span>
-                                                    </span>
-                                        </td>
-                                        <td>
-                                                    <span class="badge" th:classappend="${user.enabled ? 'bg-success' : 'bg-danger'}">
-                                                        <span th:text="${user.enabled ? 'Active' : 'Inactive'}">Status</span>
-                                                    </span>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Room</th>
+                                <th>Booking Date</th>
+                                <th>Status</th>
+                                <th>Price</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="booking : ${recentBookings}">
+                                <td th:text="${booking.room.title}">Room Title</td>
+                                <td th:text="${#temporals.format(booking.bookingDate, 'dd-MM-yyyy')}">01-01-2024</td>
+                                <td>
+                                    <span th:class="${'badge ' + (booking.status == 'CONFIRMED' ? 'bg-success' : 
+                                                               booking.status == 'PENDING' ? 'bg-warning' : 
+                                                               booking.status == 'CANCELLED' ? 'bg-danger' : 'bg-secondary')}"
+                                          th:text="${booking.status}">Status</span>
+                                </td>
+                                <td th:text="${'$' + booking.totalPrice}">$100</td>
+                            </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -262,6 +164,5 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html> 

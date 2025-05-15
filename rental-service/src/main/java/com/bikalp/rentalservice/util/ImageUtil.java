@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ImageUtil {
-    
+
     public static String convertToBase64(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
             return null;

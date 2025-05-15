@@ -5,18 +5,21 @@ import com.bikalp.rentalservice.entity.User;
 import com.bikalp.rentalservice.service.BookingService;
 import com.bikalp.rentalservice.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
 @Controller
 @RequestMapping("/user")
 @RequiredArgsConstructor
+@Slf4j
 @PreAuthorize("hasRole('CUSTOMER')")
 public class UserController {
 
@@ -26,8 +29,9 @@ public class UserController {
     @GetMapping("/dashboard")
     public String showDashboard(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        User user = userService.findByUsername(username)
+        String email = authentication.getName();
+        log.info("Finding user by email is {}", email);
+        User user = userService.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Get user's booking statistics

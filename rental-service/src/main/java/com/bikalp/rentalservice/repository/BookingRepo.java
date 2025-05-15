@@ -26,38 +26,39 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
 
     @Query(value = "SELECT b.* FROM bookings b " +
             "JOIN rooms r ON b.room_id = r.id " +
-            "WHERE r.landlord_id = :landlordId", 
+            "WHERE r.landlord_id = :landlordId",
             nativeQuery = true)
     List<Booking> findByRoomLandlordId(@Param("landlordId") Long landlordId);
 
     @Query(value = "SELECT b.* FROM bookings b " +
             "JOIN rooms r ON b.room_id = r.id " +
-            "WHERE b.customer_id = :customerId AND b.status = :status", 
+            "WHERE b.customer_id = :customerId AND b.status = :status",
             nativeQuery = true)
-    List<Booking> findByCustomerIdAndStatus(@Param("customerId") Long customerId, 
-                                          @Param("status") String status);
+    List<Booking> findByCustomerIdAndStatus(@Param("customerId") Long customerId,
+                                            @Param("status") String status);
 
     @Query(value = "SELECT b.* FROM bookings b " +
             "JOIN rooms r ON b.room_id = r.id " +
-            "WHERE r.landlord_id = :landlordId AND b.status = :status", 
+            "WHERE r.landlord_id = :landlordId AND b.status = :status",
             nativeQuery = true)
-    List<Booking> findByLandlordIdAndStatus(@Param("landlordId") Long landlordId, 
-                                          @Param("status") String status);
+    List<Booking> findByLandlordIdAndStatus(@Param("landlordId") Long landlordId,
+                                            @Param("status") String status);
 
     @Query(value = "SELECT b.* FROM bookings b " +
-            "WHERE b.room_id = :roomId AND b.status = :status", 
+            "WHERE b.room_id = :roomId AND b.status = :status",
             nativeQuery = true)
-    List<Booking> findByRoomIdAndStatus(@Param("roomId") Long roomId, 
-                                      @Param("status") String status);
+    List<Booking> findByRoomIdAndStatus(@Param("roomId") Long roomId,
+                                        @Param("status") String status);
 
     @Query("SELECT COALESCE(SUM(b.totalPrice), 0) FROM Booking b WHERE b.status = 'COMPLETED'")
     BigDecimal getTotalRevenue();
-    
+
     @Query("SELECT b FROM Booking b WHERE b.status = :status ORDER BY b.bookingDate DESC")
     List<Booking> findRecentBookingsByStatus(@Param("status") BookingStatus status, Pageable pageable);
 
     /**
      * Count bookings by status
+     *
      * @param status booking status
      * @return count of bookings
      */
@@ -65,6 +66,7 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
 
     /**
      * Sum total amount of bookings by status
+     *
      * @param status booking status
      * @return sum of total amounts
      */
@@ -73,6 +75,7 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
 
     /**
      * Count bookings by user ID and status
+     *
      * @param userId the user ID
      * @param status the booking status
      * @return count of bookings
@@ -82,6 +85,7 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
 
     /**
      * Count all bookings by user ID
+     *
      * @param userId the user ID
      * @return count of bookings
      */
@@ -90,6 +94,7 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
 
     /**
      * Sum total amount of bookings by user ID
+     *
      * @param userId the user ID
      * @return sum of total amounts
      */
@@ -98,7 +103,8 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
 
     /**
      * Find bookings by user ID ordered by creation date
-     * @param userId the user ID
+     *
+     * @param userId   the user ID
      * @param pageable pagination information
      * @return page of bookings
      */
@@ -107,6 +113,7 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
 
     /**
      * Get recent bookings
+     *
      * @param limit number of bookings to return
      * @return list of recent bookings
      */
@@ -115,8 +122,9 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
 
     /**
      * Count bookings by landlord ID and status
+     *
      * @param landlordId the landlord ID
-     * @param status the booking status
+     * @param status     the booking status
      * @return count of bookings
      */
     @Query("SELECT COUNT(b) FROM Booking b JOIN b.room r WHERE r.landlord.id = :landlordId AND b.status = :status")
@@ -124,6 +132,7 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
 
     /**
      * Sum total amount of bookings by landlord ID
+     *
      * @param landlordId the landlord ID
      * @return sum of total amounts
      */
@@ -132,8 +141,9 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
 
     /**
      * Find bookings by landlord ID ordered by creation date
+     *
      * @param landlordId the landlord ID
-     * @param pageable pagination information
+     * @param pageable   pagination information
      * @return page of bookings
      */
     @Query("SELECT b FROM Booking b JOIN b.room r WHERE r.landlord.id = :landlordId ORDER BY b.bookingDate DESC")
@@ -141,6 +151,7 @@ public interface BookingRepo extends JpaRepository<Booking, Long> {
 
     /**
      * Find all bookings by landlord ID
+     *
      * @param landlordId the landlord ID
      * @return list of bookings
      */

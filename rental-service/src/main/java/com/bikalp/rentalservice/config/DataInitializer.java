@@ -5,12 +5,12 @@ import com.bikalp.rentalservice.enums.UserRole;
 import com.bikalp.rentalservice.repository.RoomRepo;
 import com.bikalp.rentalservice.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
@@ -18,7 +18,6 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepo userRepository;
     private final RoomRepo roomRepo;
     private final PasswordEncoder passwordEncoder;
-    private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
 
     @Override
     public void run(String... args) {

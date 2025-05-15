@@ -15,8 +15,7 @@ import com.bikalp.rentalservice.repository.UserRepo;
 import com.bikalp.rentalservice.service.AuthService;
 import com.bikalp.rentalservice.service.EmailService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -29,10 +28,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-
-    private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     private final AuthenticationManager authenticationManager;
     private final UserRepo userRepository;
@@ -44,45 +42,45 @@ public class AuthServiceImpl implements AuthService {
     public void login(LoginRequest loginRequest) throws AuthenticationException {
         try {
             log.info("Starting authentication process for: {}", loginRequest.getEmailOrUsername());
-            
+
             // First try to find user by email
             User user = userRepository.findByEmail(loginRequest.getEmailOrUsername())
-                .orElseGet(() -> {
-                    log.info("User not found by email, trying username");
-                    return userRepository.findByUsername(loginRequest.getEmailOrUsername())
-                        .orElseThrow(() -> {
-                            log.warn("User not found with email/username: {}", loginRequest.getEmailOrUsername());
-                            return new AuthenticationException("User not found");
-                        });
-                });
-            
+                    .orElseGet(() -> {
+                        log.info("User not found by email, trying username");
+                        return userRepository.findByUsername(loginRequest.getEmailOrUsername())
+                                .orElseThrow(() -> {
+                                    log.warn("User not found with email/username: {}", loginRequest.getEmailOrUsername());
+                                    return new AuthenticationException("User not found");
+                                });
+                    });
+
             log.info("User found: {} with role: {}", user.getUsername(), user.getRole());
-            
+
             if (!user.isEnabled()) {
                 log.warn("User account is disabled: {}", user.getUsername());
                 throw new AuthenticationException("Account is disabled");
             }
-            
+
             // Verify password
             if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
                 log.warn("Invalid password for user: {}", user.getUsername());
                 throw new AuthenticationException("Invalid password");
             }
-            
+
             // Create authentication token
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                user.getUsername(), // Use username for authentication
-                loginRequest.getPassword(),
-                user.getAuthorities()
+                    user.getUsername(), // Use username for authentication
+                    loginRequest.getPassword(),
+                    user.getAuthorities()
             );
-            
+
             // Authenticate
             Authentication authentication = authenticationManager.authenticate(authToken);
             log.info("Authentication successful for user: {}", authentication.getName());
-            
+
             // Set authentication in security context
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            
+
         } catch (AuthenticationException e) {
             log.error("Authentication failed: {}", e.getMessage());
             throw e;

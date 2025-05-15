@@ -82,7 +82,7 @@ public interface BookingService {
      * Get recent bookings for a specific landlord
      *
      * @param landlordId the landlord ID
-     * @param limit number of bookings to return
+     * @param limit      number of bookings to return
      * @return list of recent bookings
      */
     List<Booking> getRecentBookingsByLandlord(Long landlordId, int limit);

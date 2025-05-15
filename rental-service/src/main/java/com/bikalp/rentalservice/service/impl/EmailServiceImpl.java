@@ -5,19 +5,18 @@ import com.bikalp.rentalservice.service.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
 
-    private static final Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
     private final JavaMailSender mailSender;
 
     @Value("${spring.mail.username}")
@@ -36,22 +35,22 @@ public class EmailServiceImpl implements EmailService {
             helper.setFrom(fromEmail);
             helper.setTo(toEmail);
             helper.setSubject("Password Reset Request");
-            
+
             String htmlContent = String.format(
-                "<html><body>" +
-                "<h2>Password Reset Request</h2>" +
-                "<p>You have requested to reset your password. Click the link below to proceed:</p>" +
-                "<p><a href='%s'>Reset Password</a></p>" +
-                "<p>If you did not request this, please ignore this email.</p>" +
-                "</body></html>",
-                resetUrl
+                    "<html><body>" +
+                            "<h2>Password Reset Request</h2>" +
+                            "<p>You have requested to reset your password. Click the link below to proceed:</p>" +
+                            "<p><a href='%s'>Reset Password</a></p>" +
+                            "<p>If you did not request this, please ignore this email.</p>" +
+                            "</body></html>",
+                    resetUrl
             );
 
             helper.setText(htmlContent, true);
             mailSender.send(message);
-            logger.info("Password reset email sent to: {}", toEmail);
+            log.info("Password reset email sent to: {}", toEmail);
         } catch (MessagingException e) {
-            logger.error("Failed to send password reset email to: {}", toEmail, e);
+            log.error("Failed to send password reset email to: {}", toEmail, e);
             throw new EmailException("Failed to send password reset email", e);
         }
     }
@@ -66,22 +65,22 @@ public class EmailServiceImpl implements EmailService {
             helper.setFrom(fromEmail);
             helper.setTo(toEmail);
             helper.setSubject("Email Verification");
-            
+
             String htmlContent = String.format(
-                "<html><body>" +
-                "<h2>Email Verification</h2>" +
-                "<p>Please click the link below to verify your email address:</p>" +
-                "<p><a href='%s'>Verify Email</a></p>" +
-                "<p>If you did not create an account, please ignore this email.</p>" +
-                "</body></html>",
-                verificationUrl
+                    "<html><body>" +
+                            "<h2>Email Verification</h2>" +
+                            "<p>Please click the link below to verify your email address:</p>" +
+                            "<p><a href='%s'>Verify Email</a></p>" +
+                            "<p>If you did not create an account, please ignore this email.</p>" +
+                            "</body></html>",
+                    verificationUrl
             );
 
             helper.setText(htmlContent, true);
             mailSender.send(message);
-            logger.info("Verification email sent to: {}", toEmail);
+            log.info("Verification email sent to: {}", toEmail);
         } catch (MessagingException e) {
-            logger.error("Failed to send verification email to: {}", toEmail, e);
+            log.error("Failed to send verification email to: {}", toEmail, e);
             throw new EmailException("Failed to send verification email", e);
         }
     }
@@ -97,11 +96,11 @@ public class EmailServiceImpl implements EmailService {
             helper.setTo(toEmail);
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
-            
+
             mailSender.send(message);
-            logger.info("Welcome email sent to: {}", toEmail);
+            log.info("Welcome email sent to: {}", toEmail);
         } catch (MessagingException e) {
-            logger.error("Failed to send welcome email to: {}", toEmail, e);
+            log.error("Failed to send welcome email to: {}", toEmail, e);
             throw new EmailException("Failed to send welcome email", e);
         }
     }
@@ -117,11 +116,11 @@ public class EmailServiceImpl implements EmailService {
             helper.setTo(toEmail);
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
-            
+
             mailSender.send(message);
-            logger.info("Booking confirmation email sent to: {}", toEmail);
+            log.info("Booking confirmation email sent to: {}", toEmail);
         } catch (MessagingException e) {
-            logger.error("Failed to send booking confirmation email to: {}", toEmail, e);
+            log.error("Failed to send booking confirmation email to: {}", toEmail, e);
             throw new EmailException("Failed to send booking confirmation email", e);
         }
     }
@@ -137,17 +136,17 @@ public class EmailServiceImpl implements EmailService {
             helper.setTo(toEmail);
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
-            
+
             mailSender.send(message);
-            logger.info("Booking cancellation email sent to: {}", toEmail);
+            log.info("Booking cancellation email sent to: {}", toEmail);
         } catch (MessagingException e) {
-            logger.error("Failed to send booking cancellation email to: {}", toEmail, e);
+            log.error("Failed to send booking cancellation email to: {}", toEmail, e);
             throw new EmailException("Failed to send booking cancellation email", e);
         }
     }
 
     private void validateEmailConfiguration() {
-        if (!StringUtils.hasText(fromEmail) || fromEmail.equals("your-email@gmail.com")) {
+        if (!StringUtils.hasText(fromEmail) || fromEmail.equals("bikalpcdr42@gmail.com")) {
             throw new EmailException("Email configuration is not properly set up. Please check application.properties");
         }
     }

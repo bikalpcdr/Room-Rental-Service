@@ -55,8 +55,8 @@ public class AdminController {
     @GetMapping("/users")
     public String showUsers(Model model) {
         List<User> users = userService.getAllUsers().stream()
-            .filter(user -> user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SUPER_ADMIN)
-            .collect(Collectors.toList());
+                .filter(user -> user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.SUPER_ADMIN)
+                .collect(Collectors.toList());
         model.addAttribute("users", users);
         return "admin/users";
     }
@@ -91,19 +91,19 @@ public class AdminController {
     @GetMapping("/users/create")
     public String showCreateUserForm(Model model) {
         User user = new User();
-        user.setEnabled(true); 
+        user.setEnabled(true);
         model.addAttribute("user", user);
         return "admin/user-form";
     }
 
     @PostMapping("/users/create")
-    public String createUser(@Valid @ModelAttribute("user") User user, 
-                           BindingResult result,
-                           RedirectAttributes redirectAttributes) {
+    public String createUser(@Valid @ModelAttribute("user") User user,
+                             BindingResult result,
+                             RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             return "admin/user-form";
         }
-        
+
         try {
             user.setRole(UserRole.LANDLORD);
             userService.createUser(user);
@@ -118,20 +118,20 @@ public class AdminController {
     @GetMapping("/users/{id}/edit")
     public String showEditUserForm(@PathVariable Long id, Model model) {
         User user = userService.findById(id)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
         model.addAttribute("user", user);
         return "admin/user-form";
     }
 
     @PostMapping("/users/{id}/edit")
     public String updateUser(@PathVariable Long id,
-                           @Valid @ModelAttribute("user") User user,
-                           BindingResult result,
-                           RedirectAttributes redirectAttributes) {
+                             @Valid @ModelAttribute("user") User user,
+                             BindingResult result,
+                             RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             return "admin/user-form";
         }
-        
+
         try {
             user.setRole(UserRole.LANDLORD);
             userService.updateUser(id, user);

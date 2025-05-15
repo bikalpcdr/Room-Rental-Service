@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
 /**
  * Booking entity class.
  * Represents bookings made by customers for rooms.

@@ -14,17 +14,17 @@ public interface RoomImageRepo extends JpaRepository<RoomImage, Long> {
 
     @Query(value = "SELECT * FROM room_images ri " +
             "JOIN rooms r ON ri.room_id = r.id " +
-            "WHERE r.available = true AND r.id = :roomId", 
+            "WHERE r.available = true AND r.id = :roomId",
             nativeQuery = true)
     List<RoomImage> findImagesByAvailableRoom(@Param("roomId") Long roomId);
 
-    @Query(value = "DELETE FROM room_images WHERE room_id = :roomId", 
+    @Query(value = "DELETE FROM room_images WHERE room_id = :roomId",
             nativeQuery = true)
     void deleteByRoomId(@Param("roomId") Long roomId);
 
     @Query(value = "SELECT * FROM room_images ri " +
             "JOIN rooms r ON ri.room_id = r.id " +
-            "WHERE r.landlord_id = :landlordId", 
+            "WHERE r.landlord_id = :landlordId",
             nativeQuery = true)
     List<RoomImage> findByLandlordId(@Param("landlordId") Long landlordId);
 }

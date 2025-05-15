@@ -8,6 +8,7 @@ import com.bikalp.rentalservice.repository.RoomRepo;
 import com.bikalp.rentalservice.service.RoomService;
 import com.bikalp.rentalservice.util.ImageUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,19 +16,16 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RoomServiceImpl implements RoomService {
 
     private final RoomRepo roomRepo;
     private final RoomImageRepo roomImageRepository;
-    private static final Logger log = LoggerFactory.getLogger(RoomServiceImpl.class);
 
     @Override
     @Transactional
@@ -105,13 +103,13 @@ public class RoomServiceImpl implements RoomService {
     @Transactional
     public void saveRoomWithImages(Room room, List<MultipartFile> images) {
         log.info("Saving room with {} images", images != null ? images.size() : 0);
-        
+
         if (images != null && !images.isEmpty()) {
             try {
                 log.info("Converting images to Base64");
                 List<String> base64Images = ImageUtil.convertMultipleToBase64(images);
                 log.info("Successfully converted {} images to Base64", base64Images.size());
-                
+
                 List<RoomImage> roomImages = new ArrayList<>();
                 for (int i = 0; i < base64Images.size(); i++) {
                     RoomImage roomImage = new RoomImage();
@@ -122,13 +120,13 @@ public class RoomServiceImpl implements RoomService {
                     log.info("Created room image, primary: {}", roomImage.isPrimary());
                     roomImages.add(roomImage);
                 }
-                
+
                 log.info("Setting {} room images to room", roomImages.size());
                 room.setRoomImages(roomImages);
-                
+
                 // Log room state before save
-                log.info("Room state before save - ID: {}, Title: {}, Images count: {}", 
-                        room.getId(), room.getTitle(), 
+                log.info("Room state before save - ID: {}, Title: {}, Images count: {}",
+                        room.getId(), room.getTitle(),
                         room.getRoomImages() != null ? room.getRoomImages().size() : 0);
             } catch (IOException e) {
                 log.error("Error processing images: {}", e.getMessage(), e);
@@ -138,15 +136,15 @@ public class RoomServiceImpl implements RoomService {
         log.info("Saving room to database");
         roomRepo.save(room);
         log.info("Room saved successfully with ID: {}", room.getId());
-        
+
         // Verify the saved room
         Room savedRoom = roomRepo.findById(room.getId()).orElse(null);
         if (savedRoom != null) {
-            log.info("Verification - Saved room has {} images", 
+            log.info("Verification - Saved room has {} images",
                     savedRoom.getRoomImages() != null ? savedRoom.getRoomImages().size() : 0);
             if (savedRoom.getRoomImages() != null) {
-                savedRoom.getRoomImages().forEach(img -> 
-                    log.info("Image ID: {}, Primary: {}", img.getId(), img.isPrimary()));
+                savedRoom.getRoomImages().forEach(img ->
+                        log.info("Image ID: {}, Primary: {}", img.getId(), img.isPrimary()));
             }
         } else {
             log.error("Room not found after saving!");

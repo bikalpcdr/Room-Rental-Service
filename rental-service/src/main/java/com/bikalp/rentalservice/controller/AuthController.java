@@ -1,7 +1,6 @@
 package com.bikalp.rentalservice.controller;
 
 import com.bikalp.rentalservice.dto.LoginRequest;
-import com.bikalp.rentalservice.dto.RegisterRequest;
 import com.bikalp.rentalservice.dto.ResetPasswordRequest;
 import com.bikalp.rentalservice.entity.User;
 import com.bikalp.rentalservice.enums.UserRole;
@@ -16,8 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -38,9 +37,9 @@ public class AuthController implements AuthenticationSuccessHandler {
 
     @GetMapping("/login")
     public String showLoginForm(@RequestParam(value = "error", required = false) String error,
-                              @RequestParam(value = "logout", required = false) String logout,
-                              @RequestParam(value = "expired", required = false) String expired,
-                              Model model, HttpSession session) {
+                                @RequestParam(value = "logout", required = false) String logout,
+                                @RequestParam(value = "expired", required = false) String expired,
+                                Model model, HttpSession session) {
         if (error != null) {
             model.addAttribute("error", "Invalid email/username or password");
         }
@@ -56,11 +55,11 @@ public class AuthController implements AuthenticationSuccessHandler {
 
     @PostMapping("/login")
     public String login(@Valid @ModelAttribute("loginRequest") LoginRequest loginRequest,
-                       BindingResult bindingResult,
-                       Model model,
-                       RedirectAttributes redirectAttributes) {
+                        BindingResult bindingResult,
+                        Model model,
+                        RedirectAttributes redirectAttributes) {
         log.info("Received login request for email or username: {}", loginRequest.getEmailOrUsername());
-        
+
         if (bindingResult.hasErrors()) {
             log.warn("Login request validation failed: {}", bindingResult.getAllErrors());
             model.addAttribute("error", "Please fill in all required fields");
@@ -84,8 +83,8 @@ public class AuthController implements AuthenticationSuccessHandler {
     }
 
     @PostMapping("/register")
-    public String registerUser(@Valid @ModelAttribute("user") User user, 
-                             BindingResult result) {
+    public String registerUser(@Valid @ModelAttribute("user") User user,
+                               BindingResult result) {
         if (result.hasErrors()) {
             return "auth/register";
         }
@@ -101,7 +100,7 @@ public class AuthController implements AuthenticationSuccessHandler {
 
     @PostMapping("/forgot-password")
     public String forgotPassword(@RequestParam String email,
-                                RedirectAttributes redirectAttributes) {
+                                 RedirectAttributes redirectAttributes) {
         try {
             authService.sendPasswordResetEmail(email);
             redirectAttributes.addFlashAttribute("success", "Password reset link has been sent to your email.");
@@ -121,9 +120,9 @@ public class AuthController implements AuthenticationSuccessHandler {
 
     @PostMapping("/reset-password")
     public String resetPassword(@RequestParam String token,
-                              @Valid @ModelAttribute("resetPasswordRequest") ResetPasswordRequest resetPasswordRequest,
-                              BindingResult result,
-                              RedirectAttributes redirectAttributes) {
+                                @Valid @ModelAttribute("resetPasswordRequest") ResetPasswordRequest resetPasswordRequest,
+                                BindingResult result,
+                                RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.resetPasswordRequest", result);
             redirectAttributes.addFlashAttribute("resetPasswordRequest", resetPasswordRequest);
@@ -151,16 +150,16 @@ public class AuthController implements AuthenticationSuccessHandler {
     }
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, 
-                                      HttpServletResponse response, 
-                                      Authentication authentication) throws IOException {
+    public void onAuthenticationSuccess(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        Authentication authentication) throws IOException {
         String username = authentication.getName();
         Optional<User> userOptional = userService.findByUsername(username);
-        
+
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             String redirectUrl;
-            
+
             if (user.getRole() == UserRole.SUPER_ADMIN) {
                 redirectUrl = "/superadmin/dashboard";
             } else if (user.getRole() == UserRole.ADMIN) {

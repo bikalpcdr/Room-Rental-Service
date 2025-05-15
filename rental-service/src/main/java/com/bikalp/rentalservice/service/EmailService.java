@@ -5,7 +5,8 @@ import com.bikalp.rentalservice.exception.EmailException;
 public interface EmailService {
     /**
      * Sends a password reset email to the user
-     * @param toEmail The recipient's email address
+     *
+     * @param toEmail  The recipient's email address
      * @param resetUrl The password reset URL
      * @throws EmailException If email sending fails
      */
@@ -13,7 +14,8 @@ public interface EmailService {
 
     /**
      * Sends an email verification link to the user
-     * @param toEmail The recipient's email address
+     *
+     * @param toEmail         The recipient's email address
      * @param verificationUrl The email verification URL
      * @throws EmailException If email sending fails
      */
@@ -21,8 +23,9 @@ public interface EmailService {
 
     /**
      * Sends a welcome email to newly registered users
-     * @param toEmail The recipient's email address
-     * @param subject The email subject
+     *
+     * @param toEmail     The recipient's email address
+     * @param subject     The email subject
      * @param htmlContent The HTML content of the email
      * @throws EmailException If email sending fails
      */
@@ -30,8 +33,9 @@ public interface EmailService {
 
     /**
      * Sends a booking confirmation email
-     * @param toEmail The recipient's email address
-     * @param subject The email subject
+     *
+     * @param toEmail     The recipient's email address
+     * @param subject     The email subject
      * @param htmlContent The HTML content of the email
      * @throws EmailException If email sending fails
      */
@@ -39,8 +43,9 @@ public interface EmailService {
 
     /**
      * Sends a booking cancellation email
-     * @param toEmail The recipient's email address
-     * @param subject The email subject
+     *
+     * @param toEmail     The recipient's email address
+     * @param subject     The email subject
      * @param htmlContent The HTML content of the email
      * @throws EmailException If email sending fails
      */

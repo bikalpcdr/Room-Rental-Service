@@ -1,0 +1,67 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:15
+    container_name: rental_postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=rental_service
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: rental_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@yopmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "9090:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  springboot:
+    build: .
+    container_name: rental_service
+    environment:
+      SERVER_PORT: 8080
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: rental_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8082:8080"
+    volumes:
+      - uploads:/app/uploads
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: rental_jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    user: root
+
+volumes:
+  pgdata:
+  uploads:
+  jenkins_home:

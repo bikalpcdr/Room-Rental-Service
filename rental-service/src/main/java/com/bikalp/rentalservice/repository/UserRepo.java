@@ -2,6 +2,7 @@ package com.bikalp.rentalservice.repository;
 
 import com.bikalp.rentalservice.entity.User;
 import com.bikalp.rentalservice.enums.UserRole;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -64,4 +65,7 @@ public interface UserRepo extends JpaRepository<User, Long> {
     Page<User> findByUsernameContainingOrEmailContainingOrFullNameContaining(
         String username, String email, String fullName, Pageable pageable
     );
+
+    @Query(value = "select enabled from users where = :emailOrUsername", nativeQuery = true)
+    Optional<User> checkIsEnabled(String emailOrUsername);
 }

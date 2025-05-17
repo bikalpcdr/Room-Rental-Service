@@ -20,6 +20,7 @@ public class UserDetailsImpl implements UserDetails {
     private String email;
     private String name;
     private String phoneNumber;
+    private boolean enabled;
 
     @JsonIgnore
     private String password;
@@ -32,6 +33,7 @@ public class UserDetailsImpl implements UserDetails {
                 user.getEmail(),
                 user.getUsername(),
                 user.getPhoneNumber(),
+                user.isEnabled(),
                 user.getPassword(),
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
         );
@@ -69,6 +71,6 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 } 

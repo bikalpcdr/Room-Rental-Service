@@ -4,6 +4,8 @@ import com.bikalp.rentalservice.dto.LoginRequest;
 import com.bikalp.rentalservice.dto.ResetPasswordRequest;
 import com.bikalp.rentalservice.entity.User;
 import com.bikalp.rentalservice.enums.UserRole;
+import com.bikalp.rentalservice.exception.AccountDisabledException;
+import com.bikalp.rentalservice.exception.AuthenticationException;
 import com.bikalp.rentalservice.service.AuthService;
 import com.bikalp.rentalservice.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,7 +15,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -41,7 +42,9 @@ public class AuthController implements AuthenticationSuccessHandler {
                                 @RequestParam(value = "expired", required = false) String expired,
                                 Model model, HttpSession session) {
         if (error != null) {
-            model.addAttribute("error", "Invalid email/username or password");
+            String errorMessage = (String) session.getAttribute("error");
+            model.addAttribute("error", errorMessage != null ? errorMessage : "Invalid email/username or password");
+            session.removeAttribute("error");
         }
         if (logout != null) {
             model.addAttribute("success", "You have been logged out successfully");
@@ -57,7 +60,7 @@ public class AuthController implements AuthenticationSuccessHandler {
     public String login(@Valid @ModelAttribute("loginRequest") LoginRequest loginRequest,
                         BindingResult bindingResult,
                         Model model,
-                        RedirectAttributes redirectAttributes) {
+                        HttpSession session) {
         log.info("Received login request for email or username: {}", loginRequest.getEmailOrUsername());
 
         if (bindingResult.hasErrors()) {
@@ -69,6 +72,10 @@ public class AuthController implements AuthenticationSuccessHandler {
         try {
             authService.login(loginRequest);
             return "redirect:/";
+        } catch (AccountDisabledException e) {
+            log.warn("Account disabled: {}", e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            return "auth/login";
         } catch (AuthenticationException e) {
             log.warn("Authentication failed: {}", e.getMessage());
             model.addAttribute("error", e.getMessage());

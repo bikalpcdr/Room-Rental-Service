@@ -1,5 +1,6 @@
 package com.bikalp.rentalservice.config;
 
+import com.bikalp.rentalservice.exception.AccountDisabledException;
 import com.bikalp.rentalservice.security.JwtAuthenticationEntryPoint;
 import com.bikalp.rentalservice.security.JwtAuthenticationFilter;
 import jakarta.servlet.ServletException;
@@ -8,11 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -71,8 +74,17 @@ public class SecurityConfig {
                             .successHandler(authenticationSuccessHandler())
                             .failureHandler((request, response, exception) -> {
                                 log.warn("Authentication failed: {}", exception.getMessage());
-                                request.getSession().setAttribute("error", "Invalid email/username or password");
-                                response.sendRedirect("/auth/login");
+                                String errorMessage;
+                                
+                                if (exception instanceof DisabledException || 
+                                    (exception.getCause() != null && exception.getCause() instanceof DisabledException)) {
+                                    errorMessage = "Your account is disabled. Please contact the administrator to reactivate your account.";
+                                } else {
+                                    errorMessage = "Invalid email/username or password";
+                                }
+                                
+                                request.getSession().setAttribute("error", errorMessage);
+                                response.sendRedirect("/auth/login?error");
                             })
                             .permitAll();
                 })

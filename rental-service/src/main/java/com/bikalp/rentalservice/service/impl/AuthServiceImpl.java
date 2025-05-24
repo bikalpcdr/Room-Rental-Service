@@ -17,6 +17,7 @@ import com.bikalp.rentalservice.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -50,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
                         return userRepository.findByUsername(loginRequest.getEmailOrUsername())
                                 .orElseThrow(() -> {
                                     log.warn("User not found with email/username: {}", loginRequest.getEmailOrUsername());
-                                    return new AuthenticationException("User not found");
+                                    return new AuthenticationException("Invalid email/username or password");
                                 });
                     });
 
@@ -58,13 +59,13 @@ public class AuthServiceImpl implements AuthService {
 
             if (!user.isEnabled()) {
                 log.warn("User account is disabled: {}", user.getUsername());
-                throw new AuthenticationException("Account is disabled");
+                throw new DisabledException("Your account is disabled. Please contact the administrator to reactivate your account.");
             }
 
             // Verify password
             if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
                 log.warn("Invalid password for user: {}", user.getUsername());
-                throw new AuthenticationException("Invalid password");
+                throw new AuthenticationException("Invalid email/username or password");
             }
 
             // Create authentication token
@@ -81,6 +82,9 @@ public class AuthServiceImpl implements AuthService {
             // Set authentication in security context
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
+        } catch (DisabledException e) {
+            log.error("Account disabled: {}", e.getMessage());
+            throw e;
         } catch (AuthenticationException e) {
             log.error("Authentication failed: {}", e.getMessage());
             throw e;
